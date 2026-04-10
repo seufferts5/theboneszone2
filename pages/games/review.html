@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading… — The Bones Zone</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .loading-state {
+      display:flex;align-items:center;gap:.75rem;padding:4rem 0;
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;
+      text-transform:uppercase;color:var(--text-dim);
+    }
+    .loading-dot {
+      width:6px;height:6px;background:var(--amber);border-radius:50%;
+      animation:blink .8s infinite alternate;
+    }
+    .loading-dot:nth-child(2){animation-delay:.2s}
+    .loading-dot:nth-child(3){animation-delay:.4s}
+    @keyframes blink{to{opacity:.15}}
+    .error-msg {
+      padding:4rem 0;font-family:var(--mono);font-size:.7rem;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--danger);
+    }
+    .error-msg::before{content:'// Error: ';color:var(--amber-dim)}
+    #review-content{display:none}
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-logo">The <span>Bones</span> Zone</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../games.html" class="active">Games</a></li>
+      <li><a href="../../films.html">Films</a></li>
+      <li><a href="../../books.html">Books</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <div class="container" style="padding-top:2rem">
+
+    <p class="mono dim" id="breadcrumb" style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2rem">
+      <a href="../../games.html" style="color:var(--text-dim)">Games</a>
+      <span style="color:var(--amber);margin:0 .5rem">/</span>
+      <span id="breadcrumb-title">Loading…</span>
+    </p>
+
+    <div class="loading-state" id="loading">
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span>Fetching from Notion</span>
+    </div>
+
+    <div class="error-msg" id="error" style="display:none"></div>
+
+    <div id="review-content">
+      <div class="review-layout">
+
+        <article class="review-main animate-in">
+          <div class="review-cover" id="cover-wrap">
+            <img id="cover-img" src="" alt="" style="display:none">
+            <div id="cover-placeholder" class="card-thumb-placeholder" style="height:100%;display:flex;align-items:center;justify-content:center">[ no image ]</div>
+          </div>
+
+          <div class="card-meta" style="margin-bottom:.5rem">
+            <span class="type-pill game">Game</span>
+            <span id="genre-str"></span>
+          </div>
+
+          <h1 class="review-headline" id="headline"></h1>
+          <p class="review-byline">
+            Reviewed by <span>Lord Scotty</span>
+            &nbsp;//&nbsp;
+            <span id="byline-dev"></span>
+            &nbsp;//&nbsp;
+            <span id="byline-platform"></span>
+            &nbsp;//&nbsp;
+            Completed <span id="byline-completed"></span>
+          </p>
+
+          <hr class="rule" style="margin-bottom:2rem">
+
+          <div class="review-body" id="review-body">
+            <div id="review-notes-wrap">
+              <p id="review-notes"></p>
+            </div>
+
+            <h2>Gameplay</h2>
+            <p id="txt-gameplay" class="review-placeholder"></p>
+
+            <h2>Graphics and Art Direction</h2>
+            <p id="txt-graphics" class="review-placeholder"></p>
+
+            <h2>Story and World Building</h2>
+            <p id="txt-story" class="review-placeholder"></p>
+
+            <h2>Sound and Music</h2>
+            <p id="txt-sound" class="review-placeholder"></p>
+          </div>
+
+          <!-- SCREENSHOTS -->
+          <div class="screenshots-section">
+            <button class="screenshots-toggle" onclick="toggleScreenshots(this)" aria-expanded="false">
+              <span class="mono" style="font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim)">// Personal Screenshots</span>
+              <span class="screenshots-chevron">▸</span>
+            </button>
+            <div class="screenshots-body" hidden>
+              <div class="screenshots-grid">
+                <p class="screenshots-empty mono">// No screenshots added yet</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="review-sidebar animate-in delay-2">
+
+          <div class="sidebar-block">
+            <div class="sidebar-label">Overall score</div>
+            <div class="score-display">
+              <span class="score-number" id="score-num">—</span>
+              <span class="score-denom">/ 5</span>
+            </div>
+            <div class="score-dots" id="score-dots"></div>
+          </div>
+
+          <hr class="rule">
+
+          <div class="sidebar-block">
+            <div class="sidebar-label">Breakdown</div>
+            <div id="breakdown"></div>
+          </div>
+
+          <hr class="rule">
+
+          <div class="sidebar-block">
+            <div class="sidebar-label">Verdict</div>
+            <p class="verdict-text" id="verdict"></p>
+          </div>
+
+          <hr class="rule">
+
+          <div class="sidebar-block">
+            <div class="sidebar-label">File info</div>
+            <table class="info-table" id="info-table"></table>
+          </div>
+
+        </aside>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="logo">The Bones Zone</span>
+    <span>// All opinions filed and irreversible</span>
+  </div>
+</footer>
+
+<script src="../../js/main.js"></script>
+<script>
+function fmtDate(iso) {
+  if (!iso) return "Unknown";
+  return new Date(iso).toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
+}
+function fmtDateShort(iso) {
+  if (!iso) return "Unknown";
+  return new Date(iso).toLocaleDateString("en-US", { month:"short", year:"numeric" });
+}
+function verdict(r) {
+  if (r === null) return "Unscored";
+  if (r >= 5)   return "Masterpiece";
+  if (r >= 4.5) return "Essential";
+  if (r >= 4)   return "Excellent";
+  if (r >= 3.5) return "Good";
+  if (r >= 3)   return "Decent";
+  if (r >= 2)   return "Mixed";
+  if (r >= 1)   return "Poor";
+  return "Avoid";
+}
+function scoreDots(r) {
+  if (r === null) return "";
+  const filled = Math.floor(r);
+  const half   = (r % 1) >= 0.5;
+  let html = "";
+  for (let i = 0; i < 5; i++) {
+    if (i < filled) html += `<div class="score-dot filled"></div>`;
+    else if (i === filled && half) html += `<div class="score-dot" style="background:linear-gradient(90deg,var(--amber) 50%,transparent 50%);border-color:var(--amber)"></div>`;
+    else html += `<div class="score-dot"></div>`;
+  }
+  return html;
+}
+function statRow(label, val) {
+  if (val === null) return "";
+  const pct = Math.round((val / 5) * 100);
+  return `<div class="stat-row">
+    <span class="stat-name">${label}</span>
+    <div class="stat-bar"><div class="stat-fill" data-pct="${pct}"></div></div>
+    <span class="stat-val">${val}</span>
+  </div>`;
+}
+function infoRow(label, val) {
+  if (!val) return "";
+  return `<tr><td>${label}</td><td>${val}</td></tr>`;
+}
+
+async function loadGame() {
+  const params = new URLSearchParams(window.location.search);
+  const slug   = params.get("slug");
+
+  if (!slug) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("error").style.display = "";
+    document.getElementById("error").textContent = "No game specified";
+    return;
+  }
+
+  try {
+    const res  = await fetch(`/.netlify/functions/game?slug=${encodeURIComponent(slug)}`);
+    const game = await res.json();
+
+    if (!res.ok || game.error) throw new Error(game.error || "Failed to load game");
+
+    // Update page title
+    document.title = `${game.title} — The Bones Zone`;
+    document.getElementById("breadcrumb-title").textContent = game.title;
+
+    // Cover image
+    if (game.coverUrl) {
+      const img = document.getElementById("cover-img");
+      img.src = game.coverUrl;
+      img.alt = game.title;
+      img.style.display = "";
+      document.getElementById("cover-placeholder").style.display = "none";
+    }
+
+    // Meta
+    document.getElementById("genre-str").textContent = game.genres.slice(0,3).join(" · ");
+    document.getElementById("headline").textContent  = game.title;
+    document.getElementById("byline-dev").textContent = `${game.dev}`;
+    document.getElementById("byline-platform").textContent = game.consoles.slice(0,2).join(" / ") || "PC";
+    document.getElementById("byline-completed").textContent = fmtDate(game.completed);
+
+    // Review notes
+    if (game.notes && game.notes.trim()) {
+      document.getElementById("review-notes").textContent = game.notes;
+    } else {
+      document.getElementById("review-notes-wrap").style.display = "none";
+    }
+
+    // Score
+    document.getElementById("score-num").textContent = game.rating !== null ? game.rating : "—";
+    document.getElementById("score-dots").innerHTML  = scoreDots(game.rating);
+
+    // Breakdown
+    document.getElementById("breakdown").innerHTML =
+      statRow("Gameplay",  game.mechanics) +
+      statRow("Graphics",  game.art) +
+      statRow("Story",     game.story) +
+      statRow("Sound",     game.sfx || game.music);
+
+    // Verdict
+    document.getElementById("verdict").textContent = verdict(game.rating);
+
+    // Info table
+    document.getElementById("info-table").innerHTML =
+      infoRow("Developer", game.dev) +
+      infoRow("Released",  fmtDateShort(game.released)) +
+      infoRow("Completed", fmtDateShort(game.completed)) +
+      infoRow("Platform",  game.consoles.join(", ") || "PC") +
+      infoRow("Genre",     game.genres.slice(0,3).join(", "));
+
+    // Show content
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("review-content").style.display = "";
+
+    // Animate stat bars
+    initStatBars();
+
+  } catch (err) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("error").style.display = "";
+    document.getElementById("error").textContent = err.message;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadGame);
+</script>
+</body>
+</html>

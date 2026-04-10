@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Review Template — The Bones Zone</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .review-byline span, .sidebar-label, .stat-val { color: var(--book); }
+    .stat-fill { background: var(--book); }
+    .score-number { color: var(--book); }
+    .score-dot.filled { background: var(--book); border-color: var(--book); }
+    .score-dot:not(.filled) { border-color: var(--book); }
+    .verdict-text { color: var(--book); }
+    .review-body h2 { color: var(--book); }
+    .review-body h2::before, .review-body h2::after { color: rgba(122,191,122,0.4); }
+    .rule { border-top-color: rgba(122,191,122,0.35); }
+    .review-sidebar { border-color: rgba(122,191,122,0.35); }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-logo">The <span>Bones</span> Zone</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../games.html">Games</a></li>
+      <li><a href="../../films.html">Films</a></li>
+      <li><a href="../../books.html" class="active-book">Books</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <div class="container" style="padding-top: 2rem;">
+
+    <p class="mono dim" style="font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:2rem;">
+      <a href="../../books.html" style="color:var(--text-dim)">Books</a>
+      <span style="color:var(--book);margin:0 0.5rem">/</span>
+      Book Title Here
+    </p>
+
+    <div class="review-layout">
+
+      <article class="review-main animate-in">
+
+        <div class="review-cover">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-3);font-family:var(--mono);font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);">
+            [ cover image ]
+          </div>
+        </div>
+
+        <div class="card-meta" style="margin-bottom:0.5rem;">
+          <span class="type-pill book">Book</span>
+          <span>Genre</span>
+        </div>
+
+        <h1 class="review-headline">Book Title</h1>
+        <p class="review-byline">
+          Reviewed by <span>Lord Scotty</span>
+          &nbsp;//&nbsp;
+          Author Name, Year
+          &nbsp;//&nbsp;
+          Page count
+        </p>
+
+        <hr class="rule" style="margin-bottom:2rem; border-top-color: rgba(122,191,122,0.35);">
+
+        <div class="review-body">
+          <p>Opening paragraph. What's the book about, what's its ambition, and did it succeed?</p>
+
+          <h2>Prose &amp; Style</h2>
+          <p>How does it read? Is the writing itself worth savouring or is it purely functional?</p>
+
+          <h2>Story &amp; Structure</h2>
+          <p>Does the plot hold together? Is the pacing right? Any structural complaints?</p>
+
+          <h2>Characters</h2>
+          <p>Are they worth spending hundreds of pages with? Do they feel real?</p>
+
+          <h2>Final Thoughts</h2>
+          <p>Your verdict. Who should read it, who should skip it.</p>
+        </div>
+
+      </article>
+
+      <aside class="review-sidebar animate-in delay-2">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">Overall score</div>
+          <div class="score-display">
+            <span class="score-number">3.5</span>
+            <span class="score-denom">/ 5</span>
+          </div>
+          <div class="score-dots">
+            <div class="score-dot filled"></div>
+            <div class="score-dot filled"></div>
+            <div class="score-dot filled"></div>
+            <div class="score-dot" style="background: linear-gradient(90deg, var(--book) 50%, transparent 50%); border-color:var(--book);"></div>
+            <div class="score-dot"></div>
+          </div>
+        </div>
+
+        <hr class="rule" style="border-top-color: rgba(122,191,122,0.35);">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">Breakdown</div>
+          <div class="stat-row">
+            <span class="stat-name">Prose</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="70"></div></div>
+            <span class="stat-val">3.5</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Story</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="65"></div></div>
+            <span class="stat-val">3.0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Characters</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="80"></div></div>
+            <span class="stat-val">4.0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Pacing</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="60"></div></div>
+            <span class="stat-val">3.0</span>
+          </div>
+        </div>
+
+        <hr class="rule" style="border-top-color: rgba(122,191,122,0.35);">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">Verdict</div>
+          <p class="verdict-text">Solid Read</p>
+        </div>
+
+        <hr class="rule" style="border-top-color: rgba(122,191,122,0.35);">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">File info</div>
+          <table class="info-table">
+            <tr><td>Author</td><td>Name Here</td></tr>
+            <tr><td>Year</td><td>2023</td></tr>
+            <tr><td>Pages</td><td>320</td></tr>
+            <tr><td>Genre</td><td>Fiction · Horror</td></tr>
+          </table>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="logo">The Bones Zone</span>
+    <span>// All opinions filed and irreversible</span>
+  </div>
+</footer>
+
+<script src="../../js/main.js"></script>
+</body>
+</html>

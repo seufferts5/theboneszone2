@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Bones Zone</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">The <span>Bones</span> Zone</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="games.html">Games</a></li>
+      <li><a href="films.html">Films</a></li>
+      <li><a href="books.html">Books</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="page-header">
+  <div class="container page-header-inner">
+    <p class="page-tag animate-in">Transmission active</p>
+    <h1 class="page-title animate-in delay-1">
+      The<br><span class="hollow">Bones</span><br>Zone
+    </h1>
+    <p class="page-subtitle animate-in delay-2">
+      Reviews from the wreckage. Games, films, books — scored, dissected, filed.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <!-- LATEST REVIEWS -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label">Latest transmissions</div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="game">Games</button>
+        <button class="filter-btn" data-filter="film">Films</button>
+        <button class="filter-btn" data-filter="book">Books</button>
+      </div>
+
+      <div class="card-grid" id="review-grid">
+
+        <!-- SAMPLE CARD: GAME -->
+        <a href="pages/games/prey-2017.html" class="card animate-in" data-type="game">
+          <div class="card-thumb">
+            <img src="assets/images/prey-2017.png" alt="Prey (2017)">
+            <span class="card-score-badge">4.5 / 5</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="type-pill game">Game</span>
+              <span>Action RPG</span>
+            </div>
+            <h2 class="card-title">Prey</h2>
+            <p class="card-excerpt">Arkane's finest hour. A meticulously crafted immersive sim set aboard a retrofuturist space station where nothing is what it seems.</p>
+            <div class="card-footer">
+              <span class="card-date mono">2017 — PC</span>
+              <span class="card-arrow">→</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- SAMPLE CARD: FILM -->
+        <a href="pages/films/example-film.html" class="card animate-in" data-type="film">
+          <div class="card-thumb">
+            <div class="card-thumb-placeholder">[ no image ]</div>
+            <span class="card-score-badge film">4 / 5</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="type-pill film">Film</span>
+              <span>Sci-Fi · Thriller</span>
+            </div>
+            <h2 class="card-title">Example Film</h2>
+            <p class="card-excerpt">Your review excerpt will appear here. A short punchy sentence or two that hooks the reader before the full piece.</p>
+            <div class="card-footer">
+              <span class="card-date mono">2024 — 118 min</span>
+              <span class="card-arrow">→</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- SAMPLE CARD: BOOK -->
+        <a href="pages/books/example-book.html" class="card animate-in" data-type="book">
+          <div class="card-thumb">
+            <div class="card-thumb-placeholder">[ no image ]</div>
+            <span class="card-score-badge book">3.5 / 5</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="type-pill book">Book</span>
+              <span>Fiction · Horror</span>
+            </div>
+            <h2 class="card-title">Example Book</h2>
+            <p class="card-excerpt">Your review excerpt will appear here. A short punchy sentence or two that hooks the reader before the full piece.</p>
+            <div class="card-footer">
+              <span class="card-date mono">2023 — 320pp</span>
+              <span class="card-arrow">→</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="logo">The Bones Zone</span>
+    <span>// All opinions filed and irreversible</span>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

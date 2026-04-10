@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Film Review Template — The Bones Zone</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    /* film colour overrides */
+    .page-tag, .section-label { color: var(--film); }
+    .review-byline span, .sidebar-label, .stat-val { color: var(--film); }
+    .stat-fill { background: var(--film); }
+    .score-number { color: var(--film); }
+    .score-dot.filled { background: var(--film); border-color: var(--film); }
+    .score-dot:not(.filled) { border-color: var(--film); }
+    .verdict-text { color: var(--film); }
+    .review-body h2 { color: var(--film); }
+    .review-body h2::before, .review-body h2::after { color: rgba(106,176,212,0.4); }
+    .rule { border-top-color: rgba(106,176,212,0.35); }
+    .review-sidebar { border-color: rgba(106,176,212,0.35); }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-logo">The <span>Bones</span> Zone</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../games.html">Games</a></li>
+      <li><a href="../../films.html" class="active-film">Films</a></li>
+      <li><a href="../../books.html">Books</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <div class="container" style="padding-top: 2rem;">
+
+    <p class="mono dim" style="font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:2rem;">
+      <a href="../../films.html" style="color:var(--text-dim)">Films</a>
+      <span style="color:var(--film);margin:0 0.5rem">/</span>
+      Film Title Here
+    </p>
+
+    <div class="review-layout">
+
+      <article class="review-main animate-in">
+
+        <div class="review-cover">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-3);font-family:var(--mono);font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);">
+            [ cover image ]
+          </div>
+        </div>
+
+        <div class="card-meta" style="margin-bottom:0.5rem;">
+          <span class="type-pill film">Film</span>
+          <span>Genre</span>
+          <span>·</span>
+          <span>Sub-Genre</span>
+        </div>
+
+        <h1 class="review-headline">Film Title</h1>
+        <p class="review-byline">
+          Reviewed by <span>Lord Scotty</span>
+          &nbsp;//&nbsp;
+          Director Name, Year
+          &nbsp;//&nbsp;
+          Runtime
+        </p>
+
+        <hr class="rule" style="margin-bottom:2rem; border-top-color: rgba(106,176,212,0.35);">
+
+        <div class="review-body">
+          <p>Opening paragraph. Set the scene — what the film is, what it's going for, and your overall read on it.</p>
+
+          <h2>Direction &amp; Craft</h2>
+          <p>How is it shot, paced, and structured? What does the director do well or badly?</p>
+
+          <h2>Story &amp; Writing</h2>
+          <p>Does the script hold up? Are the characters worth spending two hours with?</p>
+
+          <h2>Performance</h2>
+          <p>Who stands out in the cast? Who lets it down?</p>
+
+          <h2>Final Thoughts</h2>
+          <p>Your verdict. No hedging.</p>
+        </div>
+
+      </article>
+
+      <aside class="review-sidebar animate-in delay-2">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">Overall score</div>
+          <div class="score-display">
+            <span class="score-number">4</span>
+            <span class="score-denom">/ 5</span>
+          </div>
+          <div class="score-dots">
+            <div class="score-dot filled"></div>
+            <div class="score-dot filled"></div>
+            <div class="score-dot filled"></div>
+            <div class="score-dot filled"></div>
+            <div class="score-dot"></div>
+          </div>
+        </div>
+
+        <hr class="rule" style="border-top-color: rgba(106,176,212,0.35);">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">Breakdown</div>
+          <div class="stat-row">
+            <span class="stat-name">Direction</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="80"></div></div>
+            <span class="stat-val">4.0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Writing</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="70"></div></div>
+            <span class="stat-val">3.5</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Performances</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="90"></div></div>
+            <span class="stat-val">4.5</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Visuals</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="85"></div></div>
+            <span class="stat-val">4.0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Score / Sound</span>
+            <div class="stat-bar"><div class="stat-fill" data-pct="75"></div></div>
+            <span class="stat-val">3.5</span>
+          </div>
+        </div>
+
+        <hr class="rule" style="border-top-color: rgba(106,176,212,0.35);">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">Verdict</div>
+          <p class="verdict-text">Worth Your Time</p>
+        </div>
+
+        <hr class="rule" style="border-top-color: rgba(106,176,212,0.35);">
+
+        <div class="sidebar-block">
+          <div class="sidebar-label">File info</div>
+          <table class="info-table">
+            <tr><td>Director</td><td>Name Here</td></tr>
+            <tr><td>Year</td><td>2024</td></tr>
+            <tr><td>Runtime</td><td>118 min</td></tr>
+            <tr><td>Genre</td><td>Sci-Fi · Thriller</td></tr>
+          </table>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="logo">The Bones Zone</span>
+    <span>// All opinions filed and irreversible</span>
+  </div>
+</footer>
+
+<script src="../../js/main.js"></script>
+</body>
+</html>

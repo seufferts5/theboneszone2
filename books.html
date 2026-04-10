@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Books — The Bones Zone</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-header::before { background: linear-gradient(135deg, rgba(122,191,122,0.1) 0%, transparent 60%); }
+    .page-tag, .section-label, .card-arrow { color: var(--book); }
+    .section-label::after { background: rgba(122,191,122,0.35); }
+    .page-title .hollow { -webkit-text-stroke-color: var(--book); }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">The <span>Bones</span> Zone</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="games.html">Games</a></li>
+      <li><a href="films.html">Films</a></li>
+      <li><a href="books.html" class="active-book">Books</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="container page-header-inner">
+    <p class="page-tag animate-in">Subject: Books</p>
+    <h1 class="page-title animate-in delay-1">Book<br><span class="hollow">Reviews</span></h1>
+    <p class="page-subtitle animate-in delay-2">
+      Scored 0–5. Read cover to cover. No Goodreads star padding.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container">
+      <div class="section-label">All book reviews</div>
+
+      <div class="card-grid" id="review-grid">
+
+        <!-- SAMPLE BOOK CARD -->
+        <a href="pages/books/example-book.html" class="card animate-in" data-type="book">
+          <div class="card-thumb">
+            <div class="card-thumb-placeholder">[ no image ]</div>
+            <span class="card-score-badge book">3.5 / 5</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="type-pill book">Book</span>
+              <span>Fiction · Horror</span>
+            </div>
+            <h2 class="card-title">Example Book</h2>
+            <p class="card-excerpt">Your review excerpt goes here. Replace this card with your actual reviews.</p>
+            <div class="card-footer">
+              <span class="card-date mono">2023 — 320pp</span>
+              <span class="card-arrow">→</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="logo">The Bones Zone</span>
+    <span>// All opinions filed and irreversible</span>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

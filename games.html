@@ -96,8 +96,9 @@
       <!-- Games grid — populated by JS -->
       <div class="card-grid" id="review-grid" style="display:none"></div>
 
-      <!-- Infinite scroll sentinel -->
-      <div id="scroll-sentinel" style="display:none;align-items:center;gap:.75rem;padding:2rem 0;font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);">
+      <!-- Infinite scroll sentinel — always in DOM, invisible until loading -->
+      <div id="scroll-sentinel" style="height:1px;margin-top:2rem;"></div>
+      <div id="load-more-indicator" style="display:none;align-items:center;gap:.75rem;padding:2rem 0;font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);">
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
@@ -183,14 +184,14 @@ async function fetchBatch() {
   if (loading || !cache.hasMore) return;
   loading = true;
 
-  const sentinel   = document.getElementById("scroll-sentinel");
+  const indicator  = document.getElementById("load-more-indicator");
   const loadingEl  = document.getElementById("loading");
   const errorEl    = document.getElementById("error");
   const grid       = document.getElementById("review-grid");
   const info       = document.getElementById("sync-info");
   const empty      = document.getElementById("empty");
 
-  if (sentinel) sentinel.style.display = "flex";
+  if (indicator) indicator.style.display = "flex";
 
   try {
     const url = cache.nextCursor ? `/api/games?cursor=${encodeURIComponent(cache.nextCursor)}` : "/api/games";
@@ -205,8 +206,8 @@ async function fetchBatch() {
     cache.hasMore    = data.has_more || false;
     cache.synced     = cache.synced || data.synced;
 
-    // First batch: hide initial loader, show grid
     loadingEl.style.display = "none";
+
     if (cache.games.length === 0) {
       empty.style.display = "";
       info.textContent = "// No completed games found";
@@ -222,10 +223,6 @@ async function fetchBatch() {
     const dateStr  = syncTime.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     info.textContent = `// Synced from Notion · ${dateStr} at ${timeStr} · ${cache.games.length} loaded`;
 
-    if (!cache.hasMore && sentinel) {
-      sentinel.style.display = "none";
-    }
-
   } catch (err) {
     loadingEl.style.display = "none";
     errorEl.style.display   = "";
@@ -233,7 +230,7 @@ async function fetchBatch() {
     info.textContent        = "// Notion sync failed";
   } finally {
     loading = false;
-    if (sentinel) sentinel.style.display = cache.hasMore ? "none" : "none";
+    if (indicator) indicator.style.display = "none";
   }
 }
 

@@ -195,21 +195,20 @@ function sortGames(games) {
 }
 
 function renderFiltered() {
-  const grid = document.getElementById("review-grid");
-  const empty = document.getElementById("empty");
-  const sentinel = document.getElementById("scroll-sentinel");
+  // Full re-render — only called when search/sort changes
+  const grid      = document.getElementById("review-grid");
+  const empty     = document.getElementById("empty");
+  const sentinel  = document.getElementById("scroll-sentinel");
   const indicator = document.getElementById("load-more-indicator");
 
   const q = activeSearch.trim().toLowerCase();
   let games = q
     ? cache.games.filter(g => g.title.toLowerCase().includes(q))
-    : cache.games;
-
-  games = sortGames(games);
+    : sortGames(cache.games);
 
   const isFiltering = q || activeSort !== "rating-desc";
 
-  if (games.length === 0 && !cache.hasMore) {
+  if (games.length === 0) {
     grid.style.display = "none";
     empty.style.display = "";
     return;
@@ -220,9 +219,24 @@ function renderFiltered() {
   grid.innerHTML = games.map(buildCard).join("");
   initCardStagger();
 
-  // Only show infinite scroll when not actively filtering
   if (sentinel) sentinel.style.height = (isFiltering || !cache.hasMore) ? "0" : "1px";
   if (indicator && isFiltering) indicator.style.display = "none";
+}
+
+function appendBatch(newGames) {
+  // Only appends new cards without touching existing ones
+  const grid  = document.getElementById("review-grid");
+  const empty = document.getElementById("empty");
+
+  if (cache.games.length === 0) {
+    empty.style.display = "";
+    return;
+  }
+
+  empty.style.display = "none";
+  grid.style.display = "";
+  grid.insertAdjacentHTML("beforeend", newGames.map(buildCard).join(""));
+  initCardStagger();
 }
 
 function updateSyncInfo() {
@@ -260,7 +274,7 @@ async function fetchBatch() {
     loadingEl.style.display = "none";
     document.getElementById("games-controls").style.display = "flex";
 
-    renderFiltered();
+    appendBatch(newGames);
     updateSyncInfo();
 
   } catch (err) {

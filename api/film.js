@@ -49,19 +49,31 @@ async function getTMDBData(title, year, tmdbKey) {
   try {
     const q = encodeURIComponent(title);
     const yearParam = year ? `&year=${year}` : "";
-    const res = await fetch(
+    const searchRes = await fetch(
       `https://api.themoviedb.org/3/search/movie?api_key=${tmdbKey}&query=${q}${yearParam}&language=en-US&page=1`,
       { signal: AbortSignal.timeout(5000) }
     );
-    if (!res.ok) return {};
-    const data = await res.json();
-    const result = data.results?.[0];
+    if (!searchRes.ok) return {};
+    const searchData = await searchRes.json();
+    const result = searchData.results?.[0];
     if (!result) return {};
+
+    // Fetch stills in parallel with basic data
+    const imagesRes = await fetch(
+      `https://api.themoviedb.org/3/movie/${result.id}/images?api_key=${tmdbKey}`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    let stills = [];
+    if (imagesRes.ok) {
+      const imagesData = await imagesRes.json();
+      stills = (imagesData.backdrops || [])
+        .slice(0, 6)
+        .map(img => `https://image.tmdb.org/t/p/w780${img.file_path}`);
+    }
+
     return {
-      posterUrl:   result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : null,
-      backdropUrl: result.backdrop_path ? `https://image.tmdb.org/t/p/w1280${result.backdrop_path}` : null,
-      overview:    result.overview || "",
-      genres:      [], // would need a detail call
+      posterUrl: result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : null,
+      stills,
     };
   } catch { return {}; }
 }

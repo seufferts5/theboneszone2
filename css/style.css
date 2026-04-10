@@ -178,7 +178,7 @@ ul { list-style: none; }
 .hero-bg-img {
   position: absolute;
   inset: -20% 0;
-  background: url('assets/images/hero-bg.jpg') center center / cover no-repeat;
+  background: url('../assets/images/hero-bg.jpg') center center / cover no-repeat;
   opacity: 0.28;
   z-index: 0;
   will-change: transform;

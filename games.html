@@ -277,7 +277,8 @@ async function fetchBatch() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    cache.games.push(...(data.games || []));
+    const newGames = data.games || [];
+    cache.games.push(...newGames);
     cache.nextCursor = data.next_cursor || null;
     cache.hasMore    = data.has_more || false;
     cache.synced     = cache.synced || data.synced;

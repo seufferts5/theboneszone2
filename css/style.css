@@ -846,6 +846,12 @@ ul { list-style: none; }
   border-color: var(--amber);
   box-shadow: 0 0 0 1px var(--amber-dim);
 }
+.games-search:disabled {
+  border-color: var(--amber);
+  color: var(--amber-dim);
+  animation: scifi-pulse 1s ease-in-out infinite;
+  cursor: wait;
+}
 .games-filters {
   display: flex;
   flex-wrap: wrap;

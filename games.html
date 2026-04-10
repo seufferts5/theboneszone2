@@ -315,7 +315,12 @@ document.addEventListener("DOMContentLoaded", () => {
   searchInput.addEventListener("input", async () => {
     activeSearch = searchInput.value;
     if (activeSearch.trim() && cache.hasMore) {
+      searchInput.disabled = true;
+      searchInput.placeholder = "// Scanning all transmissions…";
       await fetchAll();
+      searchInput.disabled = false;
+      searchInput.placeholder = "Search by title…";
+      searchInput.focus();
     }
     renderFiltered();
   });

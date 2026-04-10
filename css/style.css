@@ -182,7 +182,7 @@ ul { list-style: none; }
   right: 0;
   bottom: -40%;
   background: url('../assets/images/hero-bg.jpg') center center / cover no-repeat;
-  opacity: 0.28;
+  opacity: 0.55;
   z-index: 0;
   will-change: transform;
   transition: transform 0.4s ease-out;

@@ -86,29 +86,10 @@
           <hr class="rule" style="margin-bottom:2rem">
 
           <div class="review-body" id="review-body">
-            <div id="review-notes-wrap">
+            <div id="review-notes-wrap" style="margin-bottom:1.5rem">
               <p id="review-notes"></p>
             </div>
-
-            <div id="section-gameplay">
-              <h2>Gameplay</h2>
-              <p id="txt-gameplay"></p>
-            </div>
-
-            <div id="section-graphics">
-              <h2>Graphics and Art Direction</h2>
-              <p id="txt-graphics"></p>
-            </div>
-
-            <div id="section-story">
-              <h2>Story and World Building</h2>
-              <p id="txt-story"></p>
-            </div>
-
-            <div id="section-sound">
-              <h2>Sound and Music</h2>
-              <p id="txt-sound"></p>
-            </div>
+            <div id="review-sections"></div>
           </div>
 
           <!-- SCREENSHOTS -->
@@ -218,25 +199,41 @@ function infoRow(label, val) {
   return `<tr><td>${label}</td><td>${val}</td></tr>`;
 }
 
-function fillSection(sectionId, txtId, text) {
-  if (!text || !text.trim()) {
-    const section = document.getElementById(sectionId);
-    if (section) section.style.display = "none";
-    return;
-  }
-  const el = document.getElementById(txtId);
-  if (!el) return;
-  const paras = text.split(/\n\n+/).filter(p => p.trim());
-  if (paras.length > 1) {
-    el.textContent = paras[0];
-    paras.slice(1).forEach(para => {
-      const p = document.createElement("p");
-      p.textContent = para;
-      el.parentNode.appendChild(p);
+function makePreview(text, max = 160) {
+  if (!text || text.length <= max) return text;
+  return text.slice(0, max).trimEnd() + "…";
+}
+
+function buildReviewSections(sections) {
+  const container = document.getElementById("review-sections");
+  if (!container) return;
+  const filled = sections.filter(s => s.text && s.text.trim());
+  if (!filled.length) return;
+
+  filled.forEach(({ label, text }) => {
+    const paras = text.split(/\n\n+/).filter(p => p.trim());
+    const preview = makePreview(paras[0]);
+    const bodyHtml = paras.map(p => `<p>${p}</p>`).join("");
+
+    const section = document.createElement("div");
+    section.className = "review-section";
+    section.innerHTML = `
+      <button class="review-section-toggle" aria-expanded="false">
+        <span class="review-section-label">${label}</span>
+        <span class="review-section-line"></span>
+        <span class="review-section-chevron">▸</span>
+      </button>
+      <div class="review-section-preview">${preview}</div>
+      <div class="review-section-body">${bodyHtml}</div>
+    `;
+
+    section.querySelector(".review-section-toggle").addEventListener("click", () => {
+      const open = section.classList.toggle("open");
+      section.querySelector(".review-section-toggle").setAttribute("aria-expanded", open);
     });
-  } else {
-    el.textContent = text;
-  }
+
+    container.appendChild(section);
+  });
 }
 
 async function loadGame() {
@@ -305,11 +302,13 @@ async function loadGame() {
       infoRow("Platform",  game.consoles.join(", ") || "PC") +
       infoRow("Genre",     game.genres.slice(0,3).join(", "));
 
-    // Review section text
-    fillSection("section-gameplay", "txt-gameplay", game.gameplayText);
-    fillSection("section-graphics", "txt-graphics", game.graphicsText);
-    fillSection("section-story",    "txt-story",    game.storyText);
-    fillSection("section-sound",    "txt-sound",    game.soundText);
+    // Review sections (collapsible)
+    buildReviewSections([
+      { label: "Gameplay",                text: game.gameplayText },
+      { label: "Graphics and Art Direction", text: game.graphicsText },
+      { label: "Story and World Building",   text: game.storyText },
+      { label: "Sound and Music",            text: game.soundText },
+    ]);
 
     // Screenshots
     if (game.screenshots && game.screenshots.length > 0) {

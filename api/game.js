@@ -20,8 +20,9 @@ async function getSteamImage(title) {
 }
 
 function getProp(props, ...names) {
-  for (const name of names) {
-    if (props[name] !== undefined) return props[name];
+  const lower = names.map(n => n.toLowerCase());
+  for (const key of Object.keys(props)) {
+    if (lower.includes(key.toLowerCase())) return props[key];
   }
   return null;
 }

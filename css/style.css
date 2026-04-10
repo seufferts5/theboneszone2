@@ -609,6 +609,84 @@ ul { list-style: none; }
 }
 .empty-state p::before { content: '// '; color: var(--amber-dim); }
 
+/* ── REVIEW SECTIONS (collapsible) ───────────────────────── */
+.review-section {
+  border: 1px solid var(--text-muted);
+  margin-bottom: 0.5rem;
+  transition: border-color 0.2s;
+}
+.review-section:hover,
+.review-section.open {
+  border-color: var(--amber-line);
+}
+.review-section-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  color: inherit;
+  gap: 0.75rem;
+  text-align: left;
+}
+.review-section-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  white-space: nowrap;
+}
+.review-section-label::before { content: '// [ '; color: var(--amber-dim); }
+.review-section-label::after  { content: ' ]'; color: var(--amber-dim); }
+.review-section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--text-muted);
+  transition: background 0.2s;
+}
+.review-section.open .review-section-line,
+.review-section:hover .review-section-line {
+  background: var(--amber-line);
+}
+.review-section-chevron {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--amber-dim);
+  transition: transform 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.review-section.open .review-section-chevron {
+  transform: rotate(90deg);
+  color: var(--amber);
+}
+.review-section-preview {
+  padding: 0 1.1rem 0.9rem;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  font-style: italic;
+}
+.review-section.open .review-section-preview {
+  display: none;
+}
+.review-section-body {
+  display: none;
+  padding: 0 1.25rem 1.25rem;
+  border-top: 1px solid var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--text);
+}
+.review-section.open .review-section-body {
+  display: block;
+}
+.review-section-body p + p {
+  margin-top: 1rem;
+}
+
 /* ── SCREENSHOTS ──────────────────────────────────────────── */
 .screenshots-section {
   margin-top: 2.5rem;

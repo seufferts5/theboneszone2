@@ -98,11 +98,13 @@
 
       <!-- Infinite scroll sentinel — always in DOM, invisible until loading -->
       <div id="scroll-sentinel" style="height:1px;margin-top:2rem;"></div>
-      <div id="load-more-indicator" style="display:none;align-items:center;gap:.75rem;padding:2rem 0;font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);">
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
-        <span>Loading more</span>
+      <div id="load-more-indicator" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:2.5rem 0;">
+        <div class="scifi-loader">
+          <div class="scifi-ring"></div>
+          <div class="scifi-ring"></div>
+          <div class="scifi-ring"></div>
+          <span class="scifi-label">// Retrieving transmissions</span>
+        </div>
       </div>
 
       <!-- Empty state -->

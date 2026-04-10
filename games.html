@@ -249,6 +249,24 @@ function updateSyncInfo() {
   info.textContent = `// Synced · ${dateStr} at ${timeStr} · ${cache.games.length}${more} entries`;
 }
 
+async function fetchAll() {
+  while (cache.hasMore && !fetching) {
+    fetching = true;
+    try {
+      const params = new URLSearchParams({ sort: activeSort });
+      if (cache.nextCursor) params.set("cursor", cache.nextCursor);
+      const res  = await fetch(`/api/games?${params}`);
+      if (!res.ok) break;
+      const data = await res.json();
+      if (data.error) break;
+      cache.games.push(...(data.games || []));
+      cache.nextCursor = data.next_cursor || null;
+      cache.hasMore    = data.has_more || false;
+    } catch { break; }
+    finally { fetching = false; }
+  }
+}
+
 async function fetchBatch() {
   if (fetching || !cache.hasMore) return;
   fetching = true;
@@ -292,10 +310,13 @@ async function fetchBatch() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Search
+  // Search — fetch all remaining pages first, then filter
   const searchInput = document.getElementById("games-search");
-  searchInput.addEventListener("input", () => {
+  searchInput.addEventListener("input", async () => {
     activeSearch = searchInput.value;
+    if (activeSearch.trim() && cache.hasMore) {
+      await fetchAll();
+    }
     renderFiltered();
   });
 

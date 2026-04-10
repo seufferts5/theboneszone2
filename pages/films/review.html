@@ -155,13 +155,13 @@
       <div class="review-layout">
 
         <article class="review-main animate-in">
-          <div class="review-cover" id="cover-wrap">
+          <a class="review-cover" id="cover-wrap" href="#" target="_blank" rel="noopener" style="display:block;cursor:pointer">
             <div class="film-backdrop" id="film-backdrop">
               <img id="backdrop-img" src="" alt="">
             </div>
             <img id="cover-img" src="" alt="" style="display:none">
             <div id="cover-placeholder" class="card-thumb-placeholder" style="height:100%;display:flex;align-items:center;justify-content:center">[ no image ]</div>
-          </div>
+          </a>
 
           <div class="card-meta" style="margin-bottom:.5rem">
             <span class="type-pill film">Film</span>
@@ -310,6 +310,7 @@ async function loadFilm() {
     document.getElementById("year-str").textContent  = film.year || "";
     document.getElementById("byline-watched").textContent = fmtDate(film.pubDate);
     document.getElementById("letterboxd-link").href  = film.link || "#";
+    document.getElementById("cover-wrap").href = film.link || "#";
 
     // Backdrop banner
     if (film.backdropUrl) {

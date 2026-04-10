@@ -5,6 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Bones Zone</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .loading-state {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 3rem 0;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .loading-dot {
+      width: 6px; height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+      animation: blink 0.8s infinite alternate;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { to { opacity: 0.15; } }
+    .error-state {
+      padding: 3rem 0;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--danger);
+    }
+    .error-state::before { content: '// Error: '; color: var(--amber-dim); }
+  </style>
 </head>
 <body>
 
@@ -47,69 +78,14 @@
         <button class="filter-btn" data-filter="book">Books</button>
       </div>
 
-      <div class="card-grid" id="review-grid">
-
-        <!-- SAMPLE CARD: GAME -->
-        <a href="pages/games/prey-2017.html" class="card animate-in" data-type="game">
-          <div class="card-thumb">
-            <img src="assets/images/prey-2017.png" alt="Prey (2017)">
-            <span class="card-score-badge">4.5 / 5</span>
-          </div>
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="type-pill game">Game</span>
-              <span>Action RPG</span>
-            </div>
-            <h2 class="card-title">Prey</h2>
-            <p class="card-excerpt">Arkane's finest hour. A meticulously crafted immersive sim set aboard a retrofuturist space station where nothing is what it seems.</p>
-            <div class="card-footer">
-              <span class="card-date mono">2017 — PC</span>
-              <span class="card-arrow">→</span>
-            </div>
-          </div>
-        </a>
-
-        <!-- SAMPLE CARD: FILM -->
-        <a href="pages/films/example-film.html" class="card animate-in" data-type="film">
-          <div class="card-thumb">
-            <div class="card-thumb-placeholder">[ no image ]</div>
-            <span class="card-score-badge film">4 / 5</span>
-          </div>
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="type-pill film">Film</span>
-              <span>Sci-Fi · Thriller</span>
-            </div>
-            <h2 class="card-title">Example Film</h2>
-            <p class="card-excerpt">Your review excerpt will appear here. A short punchy sentence or two that hooks the reader before the full piece.</p>
-            <div class="card-footer">
-              <span class="card-date mono">2024 — 118 min</span>
-              <span class="card-arrow">→</span>
-            </div>
-          </div>
-        </a>
-
-        <!-- SAMPLE CARD: BOOK -->
-        <a href="pages/books/example-book.html" class="card animate-in" data-type="book">
-          <div class="card-thumb">
-            <div class="card-thumb-placeholder">[ no image ]</div>
-            <span class="card-score-badge book">3.5 / 5</span>
-          </div>
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="type-pill book">Book</span>
-              <span>Fiction · Horror</span>
-            </div>
-            <h2 class="card-title">Example Book</h2>
-            <p class="card-excerpt">Your review excerpt will appear here. A short punchy sentence or two that hooks the reader before the full piece.</p>
-            <div class="card-footer">
-              <span class="card-date mono">2023 — 320pp</span>
-              <span class="card-arrow">→</span>
-            </div>
-          </div>
-        </a>
-
+      <div class="loading-state" id="home-loading">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span>Querying Notion database</span>
       </div>
+      <div class="error-state" id="home-error" style="display:none"></div>
+      <div class="card-grid" id="review-grid" style="display:none"></div>
     </div>
   </section>
 
@@ -124,6 +100,65 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script>
+const COVER_IMAGES = { "prey": "assets/images/prey-2017.png" };
+
+function formatDate(iso) {
+  if (!iso) return "Unknown";
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+function buildCard(game) {
+  const slug         = game.slug;
+  const img          = COVER_IMAGES[slug] || game.coverUrl || null;
+  const badgeStyle   = game.rating === null ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : "";
+  const thumbContent = img
+    ? `<img src="${img}" alt="${game.title}" loading="lazy">`
+    : `<div class="card-thumb-placeholder">[ no image ]</div>`;
+  return `
+    <a href="pages/games/review.html?slug=${encodeURIComponent(slug)}" class="card animate-in" data-type="game">
+      <div class="card-thumb">
+        ${thumbContent}
+        <span class="card-score-badge" ${badgeStyle}>${game.rating ?? "—"} / 5</span>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="type-pill game">Game</span>
+          <span>${game.genres.slice(0,3).join(" · ") || "Game"}</span>
+        </div>
+        <h2 class="card-title">${game.title}</h2>
+        <p class="card-excerpt">${game.dev} — ${game.consoles.slice(0,2).join(" / ") || "PC"}</p>
+        <div class="card-footer">
+          <span class="card-date mono">${formatDate(game.completed)}</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>`;
+}
+
+async function loadRecent() {
+  const loading = document.getElementById("home-loading");
+  const error   = document.getElementById("home-error");
+  const grid    = document.getElementById("review-grid");
+  try {
+    const res  = await fetch("/api/games?sort=release-desc");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    loading.style.display = "none";
+    grid.innerHTML = (data.games || []).map(buildCard).join("");
+    grid.style.display = "";
+    initCardStagger();
+    initFilters();
+  } catch (err) {
+    loading.style.display = "none";
+    error.style.display = "";
+    error.textContent = err.message;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadRecent);
+</script>
 <script>
   (function () {
     const bg = document.getElementById("hero-bg");

@@ -119,11 +119,12 @@ module.exports = async (req, res) => {
     if (!coverUrl) coverUrl = await getSteamImage(title);
 
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "s-maxage=300");
+    res.setHeader("Cache-Control", "s-maxage=0");
     return res.status(200).json({
       title, rating, dev, genres, consoles, released, completed,
       notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title),
-      gameplayText, graphicsText, storyText, soundText, screenshots
+      gameplayText, graphicsText, storyText, soundText, screenshots,
+      _debug_keys: Object.keys(found.properties)
     });
 
   } catch (err) {

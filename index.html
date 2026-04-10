@@ -136,17 +136,56 @@ function buildCard(game) {
     </a>`;
 }
 
+function buildFilmCard(film) {
+  const badgeStyle   = film.rating === null ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : `style="color:var(--film);border-color:var(--film);"`;
+  const thumbContent = film.posterUrl
+    ? `<img src="${film.posterUrl}" alt="${film.title}" loading="lazy">`
+    : `<div class="card-thumb-placeholder">[ no image ]</div>`;
+  const excerpt = film.review
+    ? film.review.slice(0, 140).trimEnd() + (film.review.length > 140 ? "…" : "")
+    : "// No review text";
+  return `
+    <a href="${film.link}" target="_blank" rel="noopener" class="card animate-in" data-type="film">
+      <div class="card-thumb poster" style="aspect-ratio:2/3">
+        ${thumbContent}
+        <span class="card-score-badge film" ${badgeStyle}>${film.rating ?? "—"} / 5</span>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="type-pill film">Film</span>
+          <span>${film.year || ""}</span>
+        </div>
+        <h2 class="card-title">${film.title}</h2>
+        <p class="card-excerpt">${excerpt}</p>
+        <div class="card-footer">
+          <span class="card-date mono">${formatDate(film.pubDate)}</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>`;
+}
+
 async function loadRecent() {
   const loading = document.getElementById("home-loading");
   const error   = document.getElementById("home-error");
   const grid    = document.getElementById("review-grid");
   try {
-    const res  = await fetch("/api/games?sort=completed-desc&limit=3");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    const [gamesRes, filmsRes] = await Promise.all([
+      fetch("/api/games?sort=completed-desc&limit=3"),
+      fetch("/api/films?sort=date-desc")
+    ]);
+
+    const gamesData = gamesRes.ok ? await gamesRes.json() : { games: [] };
+    const filmsData = filmsRes.ok ? await filmsRes.json() : { films: [] };
+
+    const games = (gamesData.games || []).slice(0, 3);
+    const films = (filmsData.films || []).slice(0, 3);
+
     loading.style.display = "none";
-    grid.innerHTML = (data.games || []).slice(0, 3).map(buildCard).join("");
+    grid.innerHTML = [
+      ...games.map(buildCard),
+      ...films.map(buildFilmCard)
+    ].join("");
     grid.style.display = "";
     initCardStagger();
     initFilters();

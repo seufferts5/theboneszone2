@@ -98,9 +98,21 @@ module.exports = async (req, res) => {
       };
     }));
 
+    const sort = req.query?.sort || "date-desc";
+    const sorted = [...films].sort((a, b) => {
+      switch (sort) {
+        case "rating-desc": return (b.rating ?? -1) - (a.rating ?? -1);
+        case "rating-asc":  return (a.rating ?? 99) - (b.rating ?? 99);
+        case "date-asc":    return new Date(a.pubDate||0) - new Date(b.pubDate||0);
+        case "alpha":       return a.title.localeCompare(b.title);
+        case "date-desc":
+        default:            return new Date(b.pubDate||0) - new Date(a.pubDate||0);
+      }
+    });
+
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1200");
-    return res.status(200).json({ films, total: films.length });
+    return res.status(200).json({ films: sorted, total: sorted.length });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });

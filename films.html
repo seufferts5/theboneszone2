@@ -87,6 +87,21 @@
         <span id="sync-info">// Loading from Letterboxd…</span>
       </div>
 
+      <!-- Search + Filter bar -->
+      <div class="games-controls" id="films-controls" style="display:none">
+        <div class="games-search-wrap">
+          <span class="games-search-icon">⌕</span>
+          <input type="text" id="films-search" class="games-search" placeholder="Search by title…" autocomplete="off">
+        </div>
+        <div class="games-filters">
+          <button class="games-filter-btn active" data-sort="date-desc">Newest</button>
+          <button class="games-filter-btn" data-sort="date-asc">Oldest</button>
+          <button class="games-filter-btn" data-sort="rating-desc">Score ↓</button>
+          <button class="games-filter-btn" data-sort="rating-asc">Score ↑</button>
+          <button class="games-filter-btn" data-sort="alpha">A–Z</button>
+        </div>
+      </div>
+
       <div class="loading-state" id="loading">
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
@@ -113,11 +128,11 @@
 
 <script src="js/main.js"></script>
 <script>
-function formatStars(rating) {
-  if (rating === null) return "— / 5";
-  return `${rating} / 5`;
-}
+const cache = { films: [] };
+let activeSort   = "date-desc";
+let activeSearch = "";
 
+function formatStars(rating) { return rating === null ? "— / 5" : `${rating} / 5`; }
 function formatDate(pubDate) {
   if (!pubDate) return "";
   return new Date(pubDate).toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -131,7 +146,6 @@ function buildCard(film) {
   const excerpt = film.review
     ? film.review.slice(0, 140).trimEnd() + (film.review.length > 140 ? "…" : "")
     : "// No review text";
-
   return `
     <a href="${film.link}" target="_blank" rel="noopener" class="card animate-in" data-type="film">
       <div class="card-thumb poster">
@@ -153,32 +167,62 @@ function buildCard(film) {
     </a>`;
 }
 
+function sortFilms(films) {
+  const s = [...films];
+  switch (activeSort) {
+    case "rating-desc": return s.sort((a,b) => (b.rating ?? -1) - (a.rating ?? -1));
+    case "rating-asc":  return s.sort((a,b) => (a.rating ?? 99) - (b.rating ?? 99));
+    case "date-asc":    return s.sort((a,b) => new Date(a.pubDate||0) - new Date(b.pubDate||0));
+    case "alpha":       return s.sort((a,b) => a.title.localeCompare(b.title));
+    case "date-desc":
+    default:            return s.sort((a,b) => new Date(b.pubDate||0) - new Date(a.pubDate||0));
+  }
+}
+
+function renderFiltered() {
+  const grid  = document.getElementById("review-grid");
+  const empty = document.getElementById("empty");
+  const q = activeSearch.trim().toLowerCase();
+  let films = q
+    ? cache.films.filter(f => f.title.toLowerCase().includes(q))
+    : sortFilms(cache.films);
+  if (films.length === 0) {
+    grid.style.display = "none";
+    empty.style.display = "";
+    return;
+  }
+  empty.style.display = "none";
+  grid.style.display = "";
+  grid.innerHTML = films.map(buildCard).join("");
+  initCardStagger();
+}
+
 async function loadFilms() {
-  const loading = document.getElementById("loading");
-  const error   = document.getElementById("error");
-  const grid    = document.getElementById("review-grid");
-  const empty   = document.getElementById("empty");
-  const info    = document.getElementById("sync-info");
+  const loading  = document.getElementById("loading");
+  const error    = document.getElementById("error");
+  const grid     = document.getElementById("review-grid");
+  const empty    = document.getElementById("empty");
+  const info     = document.getElementById("sync-info");
+  const controls = document.getElementById("films-controls");
 
   try {
-    const res  = await fetch("/api/films");
+    const res  = await fetch(`/api/films?sort=${activeSort}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
+    cache.films = data.films || [];
     loading.style.display = "none";
 
-    const films = data.films || [];
-    if (films.length === 0) {
+    if (cache.films.length === 0) {
       empty.style.display = "";
       info.textContent = "// No reviews found on Letterboxd";
       return;
     }
 
-    grid.innerHTML = films.map(buildCard).join("");
-    grid.style.display = "";
-    info.textContent = `// Synced from Letterboxd · ${films.length} reviews`;
-    initCardStagger();
+    controls.style.display = "flex";
+    renderFiltered();
+    info.textContent = `// Synced from Letterboxd · ${cache.films.length} reviews`;
 
   } catch (err) {
     loading.style.display = "none";
@@ -188,7 +232,24 @@ async function loadFilms() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", loadFilms);
+document.addEventListener("DOMContentLoaded", () => {
+  loadFilms();
+
+  document.getElementById("films-search").addEventListener("input", (e) => {
+    activeSearch = e.target.value;
+    renderFiltered();
+  });
+
+  document.querySelectorAll("#films-controls .games-filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.sort === activeSort) return;
+      document.querySelectorAll("#films-controls .games-filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeSort = btn.dataset.sort;
+      renderFiltered();
+    });
+  });
+});
 </script>
 </body>
 </html>

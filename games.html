@@ -183,7 +183,7 @@ async function loadGames() {
   const info    = document.getElementById("sync-info");
 
   try {
-    const res  = await fetch("/.netlify/functions/games");
+    const res  = await fetch("/api/games");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 

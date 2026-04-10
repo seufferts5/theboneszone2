@@ -222,7 +222,7 @@ async function loadGame() {
   }
 
   try {
-    const res  = await fetch(`/.netlify/functions/game?slug=${encodeURIComponent(slug)}`);
+    const res  = await fetch(`/api/game?slug=${encodeURIComponent(slug)}`);
     const game = await res.json();
 
     if (!res.ok || game.error) throw new Error(game.error || "Failed to load game");

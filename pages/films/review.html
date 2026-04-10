@@ -95,8 +95,15 @@
     }
     #cover-wrap { pointer-events: auto; }
 
-    /* wider sidebar */
-    .review-sidebar { min-width: 340px; }
+    /* tighter, more cohesive layout */
+    .review-layout {
+      grid-template-columns: 1fr 280px;
+      gap: 1.5rem;
+      padding: 2rem 0 4rem;
+      max-width: 860px;
+    }
+    .review-sidebar { min-width: 280px; }
+    .container { max-width: 920px; }
 
     /* review section accent */
     .review-section { border-color: rgba(106,176,212,0.2); }

@@ -9,11 +9,20 @@ module.exports = async (req, res) => {
   }
 
   const cursor = req.query?.cursor || undefined;
+  const sort   = req.query?.sort || "rating-desc";
+
+  const sortMap = {
+    "rating-desc":  [{ property: "Rating",       direction: "descending" }],
+    "rating-asc":   [{ property: "Rating",       direction: "ascending"  }],
+    "release-desc": [{ property: "Release Date", direction: "descending" }],
+    "release-asc":  [{ property: "Release Date", direction: "ascending"  }],
+    "alpha":        [{ property: "title",        direction: "ascending"  }],
+  };
 
   try {
     const reqBody = {
       filter: { property: "Status", select: { equals: "Complete" } },
-      sorts: [{ property: "Rating", direction: "descending" }],
+      sorts: sortMap[sort] || sortMap["rating-desc"],
       page_size: PAGE_SIZE
     };
     if (cursor) reqBody.start_cursor = cursor;

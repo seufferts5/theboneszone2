@@ -182,17 +182,6 @@ function buildCard(game) {
     </a>`;
 }
 
-function sortGames(games) {
-  const sorted = [...games];
-  switch (activeSort) {
-    case "rating-desc":  return sorted.sort((a,b) => (b.rating ?? -1) - (a.rating ?? -1));
-    case "rating-asc":   return sorted.sort((a,b) => (a.rating ?? 99) - (b.rating ?? 99));
-    case "release-desc": return sorted.sort((a,b) => new Date(b.released||0) - new Date(a.released||0));
-    case "release-asc":  return sorted.sort((a,b) => new Date(a.released||0) - new Date(b.released||0));
-    case "alpha":        return sorted.sort((a,b) => a.title.localeCompare(b.title));
-    default:             return sorted;
-  }
-}
 
 function renderFiltered() {
   // Full re-render — only called when search/sort changes
@@ -204,7 +193,7 @@ function renderFiltered() {
   const q = activeSearch.trim().toLowerCase();
   let games = q
     ? cache.games.filter(g => g.title.toLowerCase().includes(q))
-    : sortGames(cache.games);
+    : cache.games;
 
   const isFiltering = q || activeSort !== "rating-desc";
 
@@ -271,7 +260,9 @@ async function fetchBatch() {
   if (indicator) indicator.style.display = "flex";
 
   try {
-    const url = cache.nextCursor ? `/api/games?cursor=${encodeURIComponent(cache.nextCursor)}` : "/api/games";
+    const params = new URLSearchParams({ sort: activeSort });
+    if (cache.nextCursor) params.set("cursor", cache.nextCursor);
+    const url = `/api/games?${params}`;
     const res  = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -308,13 +299,25 @@ document.addEventListener("DOMContentLoaded", () => {
     renderFiltered();
   });
 
-  // Sort buttons
+  // Sort buttons — reset cache and re-fetch from Notion with new sort
   document.querySelectorAll(".games-filter-btn").forEach(btn => {
     btn.addEventListener("click", () => {
+      if (btn.dataset.sort === activeSort) return;
       document.querySelectorAll(".games-filter-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       activeSort = btn.dataset.sort;
-      renderFiltered();
+
+      // Reset cache for fresh fetch with new sort
+      cache.games = [];
+      cache.nextCursor = null;
+      cache.hasMore = true;
+
+      const grid = document.getElementById("review-grid");
+      grid.innerHTML = "";
+      grid.style.display = "none";
+      document.getElementById("loading").style.display = "flex";
+
+      fetchBatch();
     });
   });
 

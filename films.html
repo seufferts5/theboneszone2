@@ -6,12 +6,54 @@
   <title>Films — The Bones Zone</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* film accent overrides */
     .page-header::before { background: linear-gradient(135deg, rgba(106,176,212,0.1) 0%, transparent 60%); }
     .page-tag, .section-label, .card-arrow { color: var(--film); }
     .section-label::after { background: rgba(106,176,212,0.35); }
     .page-title .hollow { -webkit-text-stroke-color: var(--film); }
-    .filter-btn.active { background: var(--film-dim); color: var(--film); }
+    .loading-state {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 3rem 0;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .loading-dot {
+      width: 6px; height: 6px;
+      background: var(--film);
+      border-radius: 50%;
+      animation: blink 0.8s infinite alternate;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { to { opacity: 0.15; } }
+    .error-state {
+      padding: 3rem 0;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--danger);
+    }
+    .error-state::before { content: '// Error: '; color: var(--film); }
+    .sync-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    #sync-info {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    /* Film card poster uses 2:3 aspect ratio */
+    .card-thumb.poster { aspect-ratio: 2/3; }
   </style>
 </head>
 <body>
@@ -32,40 +74,32 @@
   <div class="container page-header-inner">
     <p class="page-tag animate-in">Subject: Films</p>
     <h1 class="page-title animate-in delay-1">Film<br><span class="hollow">Reviews</span></h1>
-    <p class="page-subtitle animate-in delay-2">
-      Scored 0–5. Written after one watch minimum. No spoiler-free cowardice.
-    </p>
+    <p class="page-subtitle animate-in delay-2">Scored 0–5. Written after one watch minimum. No spoiler-free cowardice.</p>
   </div>
 </header>
 
 <main>
   <section class="section">
     <div class="container">
-      <div class="section-label">All film reviews</div>
 
-      <div class="card-grid" id="review-grid">
-
-        <!-- SAMPLE FILM CARD -->
-        <a href="pages/films/example-film.html" class="card animate-in" data-type="film">
-          <div class="card-thumb">
-            <div class="card-thumb-placeholder">[ no image ]</div>
-            <span class="card-score-badge film">4 / 5</span>
-          </div>
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="type-pill film">Film</span>
-              <span>Sci-Fi · Thriller</span>
-            </div>
-            <h2 class="card-title">Example Film</h2>
-            <p class="card-excerpt">Your review excerpt goes here. Replace this card with your actual reviews.</p>
-            <div class="card-footer">
-              <span class="card-date mono">2024 — 118 min</span>
-              <span class="card-arrow">→</span>
-            </div>
-          </div>
-        </a>
-
+      <div class="sync-bar">
+        <div class="section-label" style="margin:0">All film reviews</div>
+        <span id="sync-info">// Loading from Letterboxd…</span>
       </div>
+
+      <div class="loading-state" id="loading">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span>Querying Letterboxd</span>
+      </div>
+
+      <div class="error-state" id="error" style="display:none"></div>
+      <div class="card-grid" id="review-grid" style="display:none"></div>
+      <div class="empty-state" id="empty" style="display:none">
+        <p>No film reviews found.</p>
+      </div>
+
     </div>
   </section>
 </main>
@@ -78,5 +112,83 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script>
+function formatStars(rating) {
+  if (rating === null) return "— / 5";
+  return `${rating} / 5`;
+}
+
+function formatDate(pubDate) {
+  if (!pubDate) return "";
+  return new Date(pubDate).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+function buildCard(film) {
+  const badgeStyle   = film.rating === null ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : `style="color:var(--film);border-color:var(--film);"`;
+  const thumbContent = film.posterUrl
+    ? `<img src="${film.posterUrl}" alt="${film.title}" loading="lazy">`
+    : `<div class="card-thumb-placeholder">[ no image ]</div>`;
+  const excerpt = film.review
+    ? film.review.slice(0, 140).trimEnd() + (film.review.length > 140 ? "…" : "")
+    : "// No review text";
+
+  return `
+    <a href="${film.link}" target="_blank" rel="noopener" class="card animate-in" data-type="film">
+      <div class="card-thumb poster">
+        ${thumbContent}
+        <span class="card-score-badge film" ${badgeStyle}>${formatStars(film.rating)}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="type-pill film">Film</span>
+          <span>${film.year || ""}</span>
+        </div>
+        <h2 class="card-title">${film.title}</h2>
+        <p class="card-excerpt">${excerpt}</p>
+        <div class="card-footer">
+          <span class="card-date mono">${formatDate(film.pubDate)}</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>`;
+}
+
+async function loadFilms() {
+  const loading = document.getElementById("loading");
+  const error   = document.getElementById("error");
+  const grid    = document.getElementById("review-grid");
+  const empty   = document.getElementById("empty");
+  const info    = document.getElementById("sync-info");
+
+  try {
+    const res  = await fetch("/api/films");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    loading.style.display = "none";
+
+    const films = data.films || [];
+    if (films.length === 0) {
+      empty.style.display = "";
+      info.textContent = "// No reviews found on Letterboxd";
+      return;
+    }
+
+    grid.innerHTML = films.map(buildCard).join("");
+    grid.style.display = "";
+    info.textContent = `// Synced from Letterboxd · ${films.length} reviews`;
+    initCardStagger();
+
+  } catch (err) {
+    loading.style.display = "none";
+    error.style.display   = "";
+    error.textContent     = err.message;
+    info.textContent      = "// Letterboxd sync failed";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadFilms);
+</script>
 </body>
 </html>

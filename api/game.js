@@ -4,20 +4,6 @@ function toSlug(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-async function getSteamImage(title) {
-  try {
-    const q = encodeURIComponent(title);
-    const res = await fetch(
-      `https://store.steampowered.com/api/storesearch/?term=${q}&l=en&cc=us`,
-      { signal: AbortSignal.timeout(4000) }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const appid = data?.items?.[0]?.id;
-    if (!appid) return null;
-    return `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`;
-  } catch { return null; }
-}
 
 function getProp(props, ...names) {
   const normalize = s => s.toLowerCase().replace(/\s+/g, "");
@@ -116,8 +102,7 @@ module.exports = async (req, res) => {
     const soundText     = getRichText(p, "sound and music", "Sound and Music", "sounds and music", "Sounds and Music");
     const screenshots   = getFiles(p, "personal screenshots", "Personal Screenshots");
 
-    let coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
-    if (!coverUrl) coverUrl = await getSteamImage(title);
+    const coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
 
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "s-maxage=300");

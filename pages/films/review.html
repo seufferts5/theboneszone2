@@ -65,10 +65,10 @@
       border: 1px solid var(--text-muted);
       margin-bottom: 2rem;
     }
-    .review-cover {
+    .film-cover-row .review-cover {
       aspect-ratio: 2/3;
-      margin-bottom: 0;
-      border: none;
+      margin-bottom: 0 !important;
+      border: none !important;
     }
     .film-stills {
       display: grid;
@@ -76,6 +76,7 @@
       grid-template-rows: repeat(3, 1fr);
       gap: 1px;
       background: var(--text-muted);
+      min-height: 300px;
     }
     .film-still {
       overflow: hidden;

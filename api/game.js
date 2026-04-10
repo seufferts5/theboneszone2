@@ -20,9 +20,10 @@ async function getSteamImage(title) {
 }
 
 function getProp(props, ...names) {
-  const lower = names.map(n => n.toLowerCase());
+  const normalize = s => s.toLowerCase().replace(/\s+/g, "");
+  const targets = names.map(normalize);
   for (const key of Object.keys(props)) {
-    if (lower.includes(key.toLowerCase())) return props[key];
+    if (targets.includes(normalize(key))) return props[key];
   }
   return null;
 }
@@ -119,12 +120,11 @@ module.exports = async (req, res) => {
     if (!coverUrl) coverUrl = await getSteamImage(title);
 
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "s-maxage=0");
+    res.setHeader("Cache-Control", "s-maxage=300");
     return res.status(200).json({
       title, rating, dev, genres, consoles, released, completed,
       notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title),
-      gameplayText, graphicsText, storyText, soundText, screenshots,
-      _debug_keys: Object.keys(found.properties)
+      gameplayText, graphicsText, storyText, soundText, screenshots
     });
 
   } catch (err) {

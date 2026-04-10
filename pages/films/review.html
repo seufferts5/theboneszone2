@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading… — The Bones Zone</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .loading-state {
+      display:flex;align-items:center;gap:.75rem;padding:4rem 0;
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;
+      text-transform:uppercase;color:var(--text-dim);
+    }
+    .loading-dot {
+      width:6px;height:6px;background:var(--film);border-radius:50%;
+      animation:blink .8s infinite alternate;
+    }
+    .loading-dot:nth-child(2){animation-delay:.2s}
+    .loading-dot:nth-child(3){animation-delay:.4s}
+    @keyframes blink{to{opacity:.15}}
+    .error-msg {
+      padding:4rem 0;font-family:var(--mono);font-size:.7rem;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--danger);
+    }
+    .error-msg::before{content:'// Error: ';color:var(--film)}
+    #review-content{display:none}
+
+    /* Film accent colours */
+    .review-headline { color: var(--white); }
+    .review-byline span { color: var(--film); }
+    .review-body h2 { color: var(--film); }
+    .review-body h2::before { color: rgba(106,176,212,0.4); }
+    .review-body h2::after  { color: rgba(106,176,212,0.4); }
+    .review-sidebar { border-color: rgba(106,176,212,0.35); }
+    .sidebar-label { color: var(--film); }
+    .score-number  { color: var(--film); }
+    .score-dot     { border-color: var(--film); }
+    .score-dot.filled { background: var(--film); }
+    .stat-fill     { background: var(--film); }
+    .stat-val      { color: var(--film); }
+    .verdict-text  { color: var(--film); }
+    .rule          { border-top-color: rgba(106,176,212,0.35); }
+    .letterboxd-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--film);
+      border: 1px solid rgba(106,176,212,0.4);
+      padding: 0.45rem 0.9rem;
+      margin-top: 2rem;
+      transition: background 0.15s;
+    }
+    .letterboxd-link:hover { background: var(--film-dim); }
+
+    /* poster aspect ratio for cover */
+    .review-cover { aspect-ratio: 2/3; max-width: 260px; }
+
+    /* review section accent */
+    .review-section { border-color: rgba(106,176,212,0.2); }
+    .review-section.open,
+    .review-section:hover { border-color: rgba(106,176,212,0.35); }
+    .review-section-label { color: var(--film); }
+    .review-section-label::before { color: rgba(106,176,212,0.4); }
+    .review-section-label::after  { color: rgba(106,176,212,0.4); }
+    .review-section.open .review-section-line,
+    .review-section:hover .review-section-line { background: rgba(106,176,212,0.35); }
+    .review-section.open .review-section-chevron { color: var(--film); }
+    .review-section-toggle:hover { background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(106,176,212,0.06) 50%, rgba(255,255,255,0.01) 100%); }
+    .review-section-body { border-top-color: rgba(106,176,212,0.35); background: linear-gradient(180deg, rgba(106,176,212,0.04) 0%, transparent 40%); }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-logo">The <span>Bones</span> Zone</a>
+    <ul class="nav-links">
+      <li><a href="../../index.html">Home</a></li>
+      <li><a href="../../games.html">Games</a></li>
+      <li><a href="../../films.html" class="active-film">Films</a></li>
+      <li><a href="../../books.html">Books</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <div class="container" style="padding-top:2rem">
+
+    <p class="mono dim" id="breadcrumb" style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2rem">
+      <a href="../../films.html" style="color:var(--text-dim)">Films</a>
+      <span style="color:var(--film);margin:0 .5rem">/</span>
+      <span id="breadcrumb-title">Loading…</span>
+    </p>
+
+    <div class="loading-state" id="loading">
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span>Fetching from Letterboxd</span>
+    </div>
+
+    <div class="error-msg" id="error" style="display:none"></div>
+
+    <div id="review-content">
+      <div class="review-layout">
+
+        <article class="review-main animate-in">
+          <div class="review-cover" id="cover-wrap">
+            <img id="cover-img" src="" alt="" style="display:none">
+            <div id="cover-placeholder" class="card-thumb-placeholder" style="height:100%;display:flex;align-items:center;justify-content:center">[ no image ]</div>
+          </div>
+
+          <div class="card-meta" style="margin-bottom:.5rem">
+            <span class="type-pill film">Film</span>
+            <span id="year-str"></span>
+          </div>
+
+          <h1 class="review-headline" id="headline"></h1>
+          <p class="review-byline">
+            Reviewed by <span>Lord Scotty</span>
+            &nbsp;//&nbsp;
+            Watched <span id="byline-watched"></span>
+          </p>
+
+          <hr class="rule" style="margin-bottom:2rem">
+
+          <div class="review-body" id="review-body">
+            <div id="review-sections"></div>
+          </div>
+
+          <a id="letterboxd-link" href="#" target="_blank" rel="noopener" class="letterboxd-link">
+            ↗ View on Letterboxd
+          </a>
+        </article>
+
+        <aside class="review-sidebar animate-in delay-2">
+
+          <div class="sidebar-block">
+            <div class="sidebar-label">Overall score</div>
+            <div class="score-display">
+              <span class="score-number" id="score-num">—</span>
+              <span class="score-denom">/ 5</span>
+            </div>
+            <div class="score-dots" id="score-dots"></div>
+          </div>
+
+          <hr class="rule">
+
+          <div class="sidebar-block">
+            <div class="sidebar-label">Verdict</div>
+            <p class="verdict-text" id="verdict"></p>
+          </div>
+
+          <hr class="rule">
+
+          <div class="sidebar-block">
+            <div class="sidebar-label">File info</div>
+            <table class="info-table" id="info-table"></table>
+          </div>
+
+        </aside>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="logo">The Bones Zone</span>
+    <span>// All opinions filed and irreversible</span>
+  </div>
+</footer>
+
+<script src="../../js/main.js"></script>
+<script>
+function fmtDate(pubDate) {
+  if (!pubDate) return "Unknown";
+  return new Date(pubDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+function verdict(r) {
+  if (r === null) return "Unscored";
+  if (r >= 5)   return "Masterpiece";
+  if (r >= 4.5) return "Essential";
+  if (r >= 4)   return "Excellent";
+  if (r >= 3.5) return "Good";
+  if (r >= 3)   return "Decent";
+  if (r >= 2)   return "Mixed";
+  if (r >= 1)   return "Poor";
+  return "Avoid";
+}
+function scoreDots(r) {
+  if (r === null) return "";
+  const filled = Math.floor(r);
+  const half   = (r % 1) >= 0.5;
+  let html = "";
+  for (let i = 0; i < 5; i++) {
+    if (i < filled) html += `<div class="score-dot filled"></div>`;
+    else if (i === filled && half) html += `<div class="score-dot" style="background:linear-gradient(90deg,var(--film) 50%,transparent 50%);border-color:var(--film)"></div>`;
+    else html += `<div class="score-dot"></div>`;
+  }
+  return html;
+}
+function infoRow(label, val) {
+  if (!val) return "";
+  return `<tr><td>${label}</td><td>${val}</td></tr>`;
+}
+
+function makePreview(text, max = 160) {
+  if (!text || text.length <= max) return text;
+  return text.slice(0, max).trimEnd() + "…";
+}
+
+function buildReviewSection(label, text) {
+  if (!text || !text.trim()) return null;
+  const paras   = text.split(/\n\n+/).filter(p => p.trim());
+  const preview = makePreview(paras[0]);
+  const bodyHtml = paras.map(p => `<p>${p}</p>`).join("");
+
+  const section = document.createElement("div");
+  section.className = "review-section";
+  section.innerHTML = `
+    <button class="review-section-toggle" aria-expanded="false">
+      <span class="review-section-label">${label}</span>
+      <span class="review-section-line"></span>
+      <span class="review-section-chevron">▸</span>
+    </button>
+    <div class="review-section-preview">${preview}</div>
+    <div class="review-section-body">${bodyHtml}</div>
+  `;
+  section.querySelector(".review-section-toggle").addEventListener("click", () => {
+    const open = section.classList.toggle("open");
+    section.querySelector(".review-section-toggle").setAttribute("aria-expanded", open);
+  });
+  return section;
+}
+
+async function loadFilm() {
+  const params = new URLSearchParams(window.location.search);
+  const slug   = params.get("slug");
+
+  if (!slug) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("error").style.display = "";
+    document.getElementById("error").textContent = "No film specified";
+    return;
+  }
+
+  try {
+    const res  = await fetch(`/api/film?slug=${encodeURIComponent(slug)}`);
+    const film = await res.json();
+    if (!res.ok || film.error) throw new Error(film.error || "Failed to load film");
+
+    document.title = `${film.title} — The Bones Zone`;
+    document.getElementById("breadcrumb-title").textContent = film.title;
+    document.getElementById("headline").textContent  = film.title;
+    document.getElementById("year-str").textContent  = film.year || "";
+    document.getElementById("byline-watched").textContent = fmtDate(film.pubDate);
+    document.getElementById("letterboxd-link").href  = film.link || "#";
+
+    // Cover poster
+    if (film.posterUrl) {
+      const img = document.getElementById("cover-img");
+      img.src = film.posterUrl;
+      img.alt = film.title;
+      img.style.display = "";
+      document.getElementById("cover-placeholder").style.display = "none";
+    }
+
+    // Score
+    document.getElementById("score-num").textContent = film.rating !== null ? film.rating : "—";
+    document.getElementById("score-dots").innerHTML  = scoreDots(film.rating);
+    document.getElementById("verdict").textContent   = verdict(film.rating);
+
+    // Info table
+    document.getElementById("info-table").innerHTML =
+      infoRow("Year",    film.year) +
+      infoRow("Watched", fmtDate(film.pubDate));
+
+    // Review text as collapsible section
+    const container = document.getElementById("review-sections");
+    if (film.review && film.review.trim()) {
+      const section = buildReviewSection("Review", film.review);
+      if (section) container.appendChild(section);
+    } else {
+      container.innerHTML = `<p style="color:var(--text-dim);font-family:var(--mono);font-size:.75rem">// No review text on Letterboxd</p>`;
+    }
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("review-content").style.display = "block";
+    initStatBars();
+
+  } catch (err) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("error").style.display = "";
+    document.getElementById("error").textContent = err.message;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadFilm);
+</script>
+</body>
+</html>

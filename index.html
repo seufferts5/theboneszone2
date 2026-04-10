@@ -145,7 +145,7 @@ function buildFilmCard(film) {
     ? film.review.slice(0, 140).trimEnd() + (film.review.length > 140 ? "…" : "")
     : "// No review text";
   return `
-    <a href="${film.link}" target="_blank" rel="noopener" class="card animate-in" data-type="film">
+    <a href="pages/films/review.html?slug=${encodeURIComponent(film.slug)}" class="card animate-in" data-type="film">
       <div class="card-thumb poster" style="aspect-ratio:2/3">
         ${thumbContent}
         <span class="card-score-badge film" ${badgeStyle}>${film.rating ?? "—"} / 5</span>

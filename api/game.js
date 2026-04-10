@@ -119,12 +119,20 @@ module.exports = async (req, res) => {
     let coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
     if (!coverUrl) coverUrl = await getSteamImage(title);
 
+    const _debug = {};
+    for (const [key, val] of Object.entries(found.properties)) {
+      if (val.type === "rich_text") {
+        _debug[key] = (val.rich_text || []).map(t => t.plain_text).join("").length + " chars";
+      }
+    }
+
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "s-maxage=300");
+    res.setHeader("Cache-Control", "s-maxage=0, no-store");
     return res.status(200).json({
       title, rating, dev, genres, consoles, released, completed,
       notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title),
-      gameplayText, graphicsText, storyText, soundText, screenshots
+      gameplayText, graphicsText, storyText, soundText, screenshots,
+      _debug
     });
 
   } catch (err) {

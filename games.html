@@ -96,6 +96,14 @@
       <!-- Games grid — populated by JS -->
       <div class="card-grid" id="review-grid" style="display:none"></div>
 
+      <!-- Infinite scroll sentinel -->
+      <div id="scroll-sentinel" style="display:none;align-items:center;gap:.75rem;padding:2rem 0;font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span>Loading more</span>
+      </div>
+
       <!-- Empty state -->
       <div class="empty-state" id="empty" style="display:none">
         <p>No completed games found in Notion.</p>
@@ -114,23 +122,21 @@
 
 <script src="js/main.js"></script>
 <script>
-// ── LOCAL COVER IMAGE OVERRIDES ───────────────────────────────
-// If you've uploaded a local image for a game, map its slug here.
-// These take priority over Steam CDN images.
 const COVER_IMAGES = {
   "prey": "assets/images/prey-2017.png",
 };
 
-// All game cards now link to the dynamic review page
+// Session cache: stores all fetched games and next cursor
+const cache = { games: [], nextCursor: null, hasMore: true, synced: null };
+let loading = false;
+
 function getReviewHref(slug) {
   return `pages/games/review.html?slug=${encodeURIComponent(slug)}`;
 }
 
-// ── HELPERS ───────────────────────────────────────────────────
 function formatDate(iso) {
   if (!iso) return "Unknown";
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
 function formatScore(rating) {
@@ -139,15 +145,14 @@ function formatScore(rating) {
 }
 
 function buildCard(game) {
-  const slug       = game.slug;
-  const href       = getReviewHref(slug);
-  const score      = formatScore(game.rating);
-  const genreStr   = game.genres.slice(0, 3).join(" · ") || "Game";
-  const dateStr    = formatDate(game.released);
-  const consolStr  = game.consoles.slice(0, 2).join(" / ") || "PC";
-  const img        = COVER_IMAGES[slug] || game.coverUrl || null;
-  const badgeStyle = (game.rating === null)
-    ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : "";
+  const slug         = game.slug;
+  const href         = getReviewHref(slug);
+  const score        = formatScore(game.rating);
+  const genreStr     = game.genres.slice(0, 3).join(" · ") || "Game";
+  const dateStr      = formatDate(game.released);
+  const consolStr    = game.consoles.slice(0, 2).join(" / ") || "PC";
+  const img          = COVER_IMAGES[slug] || game.coverUrl || null;
+  const badgeStyle   = (game.rating === null) ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : "";
   const thumbContent = img
     ? `<img src="${img}" alt="${game.title}" loading="lazy">`
     : `<div class="card-thumb-placeholder">[ no image ]</div>`;
@@ -174,52 +179,79 @@ function buildCard(game) {
   `;
 }
 
-// ── MAIN FETCH ────────────────────────────────────────────────
-async function loadGames() {
-  const loading = document.getElementById("loading");
-  const error   = document.getElementById("error");
-  const grid    = document.getElementById("review-grid");
-  const empty   = document.getElementById("empty");
-  const info    = document.getElementById("sync-info");
+async function fetchBatch() {
+  if (loading || !cache.hasMore) return;
+  loading = true;
+
+  const sentinel   = document.getElementById("scroll-sentinel");
+  const loadingEl  = document.getElementById("loading");
+  const errorEl    = document.getElementById("error");
+  const grid       = document.getElementById("review-grid");
+  const info       = document.getElementById("sync-info");
+  const empty      = document.getElementById("empty");
+
+  if (sentinel) sentinel.style.display = "flex";
 
   try {
-    const res  = await fetch("/api/games");
+    const url = cache.nextCursor ? `/api/games?cursor=${encodeURIComponent(cache.nextCursor)}` : "/api/games";
+    const res  = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-
     if (data.error) throw new Error(data.error);
 
-    const games = data.games || [];
-    loading.style.display = "none";
+    const newGames = data.games || [];
+    cache.games.push(...newGames);
+    cache.nextCursor = data.next_cursor || null;
+    cache.hasMore    = data.has_more || false;
+    cache.synced     = cache.synced || data.synced;
 
-    if (games.length === 0) {
+    // First batch: hide initial loader, show grid
+    loadingEl.style.display = "none";
+    if (cache.games.length === 0) {
       empty.style.display = "";
       info.textContent = "// No completed games found";
       return;
     }
 
-    // Render cards
-    grid.innerHTML = games.map(buildCard).join("");
     grid.style.display = "";
-
-    // Update sync info
-    const syncTime = new Date(data.synced);
-    const timeStr  = syncTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-    const dateStr  = syncTime.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    info.textContent = `// Synced from Notion · ${dateStr} at ${timeStr} · ${games.length} entries`;
-
-    // Trigger stagger animations
+    grid.insertAdjacentHTML("beforeend", newGames.map(buildCard).join(""));
     initCardStagger();
 
+    const syncTime = new Date(cache.synced);
+    const timeStr  = syncTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    const dateStr  = syncTime.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    info.textContent = `// Synced from Notion · ${dateStr} at ${timeStr} · ${cache.games.length} loaded`;
+
+    if (!cache.hasMore && sentinel) {
+      sentinel.style.display = "none";
+    }
+
   } catch (err) {
-    loading.style.display = "none";
-    error.style.display   = "";
-    error.textContent     = err.message;
-    info.textContent      = "// Notion sync failed";
+    loadingEl.style.display = "none";
+    errorEl.style.display   = "";
+    errorEl.textContent     = err.message;
+    info.textContent        = "// Notion sync failed";
+  } finally {
+    loading = false;
+    if (sentinel) sentinel.style.display = cache.hasMore ? "none" : "none";
   }
 }
 
-document.addEventListener("DOMContentLoaded", loadGames);
+// Infinite scroll via IntersectionObserver
+document.addEventListener("DOMContentLoaded", () => {
+  fetchBatch();
+
+  const sentinel = document.getElementById("scroll-sentinel");
+  if (!sentinel) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && cache.hasMore && !loading) {
+      fetchBatch();
+    }
+  }, { rootMargin: "300px" });
+
+  observer.observe(sentinel);
+});
 </script>
 </body>
 </html>

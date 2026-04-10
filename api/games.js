@@ -1,5 +1,5 @@
 const DATABASE_ID = "3a7ccf9e-b5b8-40de-ab98-c01372ca894a";
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 18;
 
 
 module.exports = async (req, res) => {

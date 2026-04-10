@@ -22,7 +22,8 @@
 </nav>
 
 <!-- HERO -->
-<header class="page-header">
+<header class="page-header hero-header" id="hero-header">
+  <div class="hero-bg-img" id="hero-bg"></div>
   <div class="container page-header-inner">
     <p class="page-tag animate-in">Transmission active</p>
     <h1 class="page-title animate-in delay-1">
@@ -126,5 +127,19 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script>
+  (function () {
+    const bg = document.getElementById("hero-bg");
+    const header = document.getElementById("hero-header");
+    if (!bg || !header) return;
+    window.addEventListener("scroll", function () {
+      const scrolled = window.scrollY;
+      const limit = header.offsetHeight;
+      if (scrolled <= limit) {
+        bg.style.transform = "translateY(" + (scrolled * 0.18) + "px)";
+      }
+    }, { passive: true });
+  })();
+</script>
 </body>
 </html>

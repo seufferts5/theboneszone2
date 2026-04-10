@@ -134,10 +134,7 @@
     if (!bg || !header) return;
     window.addEventListener("scroll", function () {
       const scrolled = window.scrollY;
-      const limit = header.offsetHeight;
-      if (scrolled <= limit) {
-        bg.style.transform = "translateY(" + (scrolled * 0.18) + "px)";
-      }
+      bg.style.transform = "translateY(" + (scrolled * 0.35) + "px)";
     }, { passive: true });
   })();
 </script>

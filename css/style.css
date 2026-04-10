@@ -177,7 +177,10 @@ ul { list-style: none; }
 .hero-header { isolation: isolate; }
 .hero-bg-img {
   position: absolute;
-  inset: -20% 0;
+  top: -40%;
+  left: 0;
+  right: 0;
+  bottom: -40%;
   background: url('../assets/images/hero-bg.jpg') center center / cover no-repeat;
   opacity: 0.28;
   z-index: 0;

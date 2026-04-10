@@ -17,7 +17,8 @@ module.exports = async (req, res) => {
     "rating-asc":   [{ property: "Rating",       direction: "ascending"  }],
     "release-desc": [{ property: "Release Date", direction: "descending" }],
     "release-asc":  [{ property: "Release Date", direction: "ascending"  }],
-    "alpha":        [{ property: "title",        direction: "ascending"  }],
+    "alpha":          [{ property: "title",          direction: "ascending"  }],
+    "completed-desc": [{ property: "Date Completed", direction: "descending" }],
   };
 
   try {

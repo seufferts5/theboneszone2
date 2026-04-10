@@ -141,7 +141,7 @@ async function loadRecent() {
   const error   = document.getElementById("home-error");
   const grid    = document.getElementById("review-grid");
   try {
-    const res  = await fetch("/api/games?sort=release-desc&limit=3");
+    const res  = await fetch("/api/games?sort=completed-desc&limit=3");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error);

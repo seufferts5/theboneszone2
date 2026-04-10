@@ -224,7 +224,6 @@ function renderFiltered() {
 }
 
 function appendBatch(newGames) {
-  // Only appends new cards without touching existing ones
   const grid  = document.getElementById("review-grid");
   const empty = document.getElementById("empty");
 
@@ -235,8 +234,20 @@ function appendBatch(newGames) {
 
   empty.style.display = "none";
   grid.style.display = "";
+
+  // Mark existing cards as settled so they don't re-animate
+  grid.querySelectorAll(".card.animate-in").forEach(c => {
+    c.classList.remove("animate-in");
+    c.style.animationDelay = "";
+  });
+
   grid.insertAdjacentHTML("beforeend", newGames.map(buildCard).join(""));
-  initCardStagger();
+
+  // Only stagger the newly added cards
+  const newCards = grid.querySelectorAll(".card.animate-in");
+  newCards.forEach((card, i) => {
+    card.style.animationDelay = (i * 0.06) + "s";
+  });
 }
 
 function updateSyncInfo() {

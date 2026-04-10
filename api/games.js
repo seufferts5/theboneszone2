@@ -10,6 +10,7 @@ module.exports = async (req, res) => {
 
   const cursor = req.query?.cursor || undefined;
   const sort   = req.query?.sort || "rating-desc";
+  const limit  = req.query?.limit ? parseInt(req.query.limit) : null;
 
   const sortMap = {
     "rating-desc":  [{ property: "Rating",       direction: "descending" }],
@@ -23,7 +24,7 @@ module.exports = async (req, res) => {
     const reqBody = {
       filter: { property: "Status", select: { equals: "Complete" } },
       sorts: sortMap[sort] || sortMap["rating-desc"],
-      page_size: PAGE_SIZE
+      page_size: limit || PAGE_SIZE
     };
     if (cursor) reqBody.start_cursor = cursor;
 

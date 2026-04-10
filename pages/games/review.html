@@ -90,17 +90,25 @@
               <p id="review-notes"></p>
             </div>
 
-            <h2>Gameplay</h2>
-            <p id="txt-gameplay" class="review-placeholder"></p>
+            <div id="section-gameplay">
+              <h2>Gameplay</h2>
+              <p id="txt-gameplay"></p>
+            </div>
 
-            <h2>Graphics and Art Direction</h2>
-            <p id="txt-graphics" class="review-placeholder"></p>
+            <div id="section-graphics">
+              <h2>Graphics and Art Direction</h2>
+              <p id="txt-graphics"></p>
+            </div>
 
-            <h2>Story and World Building</h2>
-            <p id="txt-story" class="review-placeholder"></p>
+            <div id="section-story">
+              <h2>Story and World Building</h2>
+              <p id="txt-story"></p>
+            </div>
 
-            <h2>Sound and Music</h2>
-            <p id="txt-sound" class="review-placeholder"></p>
+            <div id="section-sound">
+              <h2>Sound and Music</h2>
+              <p id="txt-sound"></p>
+            </div>
           </div>
 
           <!-- SCREENSHOTS -->
@@ -210,6 +218,27 @@ function infoRow(label, val) {
   return `<tr><td>${label}</td><td>${val}</td></tr>`;
 }
 
+function fillSection(sectionId, txtId, text) {
+  if (!text || !text.trim()) {
+    const section = document.getElementById(sectionId);
+    if (section) section.style.display = "none";
+    return;
+  }
+  const el = document.getElementById(txtId);
+  if (!el) return;
+  const paras = text.split(/\n\n+/).filter(p => p.trim());
+  if (paras.length > 1) {
+    el.textContent = paras[0];
+    paras.slice(1).forEach(para => {
+      const p = document.createElement("p");
+      p.textContent = para;
+      el.parentNode.appendChild(p);
+    });
+  } else {
+    el.textContent = text;
+  }
+}
+
 async function loadGame() {
   const params = new URLSearchParams(window.location.search);
   const slug   = params.get("slug");
@@ -275,6 +304,22 @@ async function loadGame() {
       infoRow("Completed", fmtDateShort(game.completed)) +
       infoRow("Platform",  game.consoles.join(", ") || "PC") +
       infoRow("Genre",     game.genres.slice(0,3).join(", "));
+
+    // Review section text
+    fillSection("section-gameplay", "txt-gameplay", game.gameplayText);
+    fillSection("section-graphics", "txt-graphics", game.graphicsText);
+    fillSection("section-story",    "txt-story",    game.storyText);
+    fillSection("section-sound",    "txt-sound",    game.soundText);
+
+    // Screenshots
+    if (game.screenshots && game.screenshots.length > 0) {
+      const grid = document.querySelector(".screenshots-grid");
+      grid.innerHTML = game.screenshots.map((url, i) => `
+        <figure class="screenshot-item">
+          <img src="${url}" alt="Screenshot ${i + 1}" loading="lazy">
+        </figure>
+      `).join("");
+    }
 
     // Show content
     document.getElementById("loading").style.display = "none";

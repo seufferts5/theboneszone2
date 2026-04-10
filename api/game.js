@@ -19,6 +19,29 @@ async function getSteamImage(title) {
   } catch { return null; }
 }
 
+function getProp(props, ...names) {
+  for (const name of names) {
+    if (props[name] !== undefined) return props[name];
+  }
+  return null;
+}
+
+function getRichText(props, ...names) {
+  const prop = getProp(props, ...names);
+  if (!prop) return "";
+  return (prop.rich_text || []).map(t => t.plain_text).join("");
+}
+
+function getFiles(props, ...names) {
+  const prop = getProp(props, ...names);
+  if (!prop || !prop.files) return [];
+  return prop.files.map(f => {
+    if (f.type === "file") return f.file.url;
+    if (f.type === "external") return f.external.url;
+    return null;
+  }).filter(Boolean);
+}
+
 module.exports = async (req, res) => {
   const token = process.env.NOTION_TOKEN;
   if (!token) {
@@ -85,6 +108,12 @@ module.exports = async (req, res) => {
     const music     = p.Music?.number ?? null;
     const sfx       = p.SFX?.number ?? null;
 
+    const gameplayText  = getRichText(p, "gameplay", "Gameplay");
+    const graphicsText  = getRichText(p, "graphics and art direction", "Graphics and Art Direction");
+    const storyText     = getRichText(p, "story and worldbuilding", "Story and Worldbuilding");
+    const soundText     = getRichText(p, "sounds and music", "Sounds and Music");
+    const screenshots   = getFiles(p, "personal screenshots", "Personal Screenshots");
+
     let coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
     if (!coverUrl) coverUrl = await getSteamImage(title);
 
@@ -92,7 +121,8 @@ module.exports = async (req, res) => {
     res.setHeader("Cache-Control", "s-maxage=300");
     return res.status(200).json({
       title, rating, dev, genres, consoles, released, completed,
-      notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title)
+      notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title),
+      gameplayText, graphicsText, storyText, soundText, screenshots
     });
 
   } catch (err) {

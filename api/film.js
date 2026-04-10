@@ -58,21 +58,9 @@ async function getTMDBData(title, year, tmdbKey) {
     const result = searchData.results?.[0];
     if (!result) return {};
 
-    const imagesRes = await fetch(
-      `https://api.themoviedb.org/3/movie/${result.id}/images?api_key=${tmdbKey}`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-    let stills = [];
-    if (imagesRes.ok) {
-      const imagesData = await imagesRes.json();
-      stills = (imagesData.backdrops || [])
-        .slice(0, 6)
-        .map(img => `https://image.tmdb.org/t/p/w1280${img.file_path}`);
-    }
-
     return {
-      posterUrl: result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : null,
-      stills,
+      posterUrl:   result.poster_path   ? `https://image.tmdb.org/t/p/w500${result.poster_path}`   : null,
+      backdropUrl: result.backdrop_path ? `https://image.tmdb.org/t/p/w1280${result.backdrop_path}` : null,
     };
   } catch { return {}; }
 }

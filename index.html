@@ -132,10 +132,17 @@
     const bg = document.getElementById("hero-bg");
     const header = document.getElementById("hero-header");
     if (!bg || !header) return;
-    window.addEventListener("scroll", function () {
-      const scrolled = window.scrollY;
-      bg.style.transform = "translateY(" + (scrolled * 0.35) + "px)";
-    }, { passive: true });
+    header.addEventListener("mousemove", function (e) {
+      const rect = header.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const dx = (e.clientX - rect.left - cx) / cx;
+      const dy = (e.clientY - rect.top - cy) / cy;
+      bg.style.transform = "translate(" + (dx * 18) + "px, " + (dy * 12) + "px)";
+    });
+    header.addEventListener("mouseleave", function () {
+      bg.style.transform = "translate(0px, 0px)";
+    });
   })();
 </script>
 </body>

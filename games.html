@@ -82,6 +82,21 @@
         <span id="sync-info">// Loading from Notion…</span>
       </div>
 
+      <!-- Search + Filter bar -->
+      <div class="games-controls" id="games-controls" style="display:none">
+        <div class="games-search-wrap">
+          <span class="games-search-icon">⌕</span>
+          <input type="text" id="games-search" class="games-search" placeholder="Search by title…" autocomplete="off">
+        </div>
+        <div class="games-filters">
+          <button class="games-filter-btn active" data-sort="rating-desc">Score ↓</button>
+          <button class="games-filter-btn" data-sort="rating-asc">Score ↑</button>
+          <button class="games-filter-btn" data-sort="release-desc">Newest</button>
+          <button class="games-filter-btn" data-sort="release-asc">Oldest</button>
+          <button class="games-filter-btn" data-sort="alpha">A–Z</button>
+        </div>
+      </div>
+
       <!-- Loading state -->
       <div class="loading-state" id="loading">
         <span class="loading-dot"></span>
@@ -125,73 +140,108 @@
 
 <script src="js/main.js"></script>
 <script>
-const COVER_IMAGES = {
-  "prey": "assets/images/prey-2017.png",
-};
+const COVER_IMAGES = { "prey": "assets/images/prey-2017.png" };
 
-// Session cache: stores all fetched games and next cursor
 const cache = { games: [], nextCursor: null, hasMore: true, synced: null };
-let loading = false;
+let fetching  = false;
+let activeSort   = "rating-desc";
+let activeSearch = "";
 
-function getReviewHref(slug) {
-  return `pages/games/review.html?slug=${encodeURIComponent(slug)}`;
-}
-
+function getReviewHref(slug) { return `pages/games/review.html?slug=${encodeURIComponent(slug)}`; }
 function formatDate(iso) {
   if (!iso) return "Unknown";
   return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
-
-function formatScore(rating) {
-  if (rating === null || rating === undefined) return "— / 5";
-  return `${rating} / 5`;
-}
+function formatScore(r) { return (r === null || r === undefined) ? "— / 5" : `${r} / 5`; }
 
 function buildCard(game) {
   const slug         = game.slug;
-  const href         = getReviewHref(slug);
-  const score        = formatScore(game.rating);
-  const genreStr     = game.genres.slice(0, 3).join(" · ") || "Game";
-  const dateStr      = formatDate(game.released);
-  const consolStr    = game.consoles.slice(0, 2).join(" / ") || "PC";
   const img          = COVER_IMAGES[slug] || game.coverUrl || null;
-  const badgeStyle   = (game.rating === null) ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : "";
+  const badgeStyle   = game.rating === null ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : "";
   const thumbContent = img
     ? `<img src="${img}" alt="${game.title}" loading="lazy">`
     : `<div class="card-thumb-placeholder">[ no image ]</div>`;
-
   return `
-    <a href="${href}" class="card animate-in" data-type="game">
+    <a href="${getReviewHref(slug)}" class="card animate-in" data-type="game">
       <div class="card-thumb">
         ${thumbContent}
-        <span class="card-score-badge" ${badgeStyle}>${score}</span>
+        <span class="card-score-badge" ${badgeStyle}>${formatScore(game.rating)}</span>
       </div>
       <div class="card-body">
         <div class="card-meta">
           <span class="type-pill game">Game</span>
-          <span>${genreStr}</span>
+          <span>${game.genres.slice(0,3).join(" · ") || "Game"}</span>
         </div>
         <h2 class="card-title">${game.title}</h2>
-        <p class="card-excerpt">${game.dev} — ${consolStr}</p>
+        <p class="card-excerpt">${game.dev} — ${game.consoles.slice(0,2).join(" / ") || "PC"}</p>
         <div class="card-footer">
-          <span class="card-date mono">${dateStr}</span>
+          <span class="card-date mono">${formatDate(game.released)}</span>
           <span class="card-arrow">→</span>
         </div>
       </div>
-    </a>
-  `;
+    </a>`;
+}
+
+function sortGames(games) {
+  const sorted = [...games];
+  switch (activeSort) {
+    case "rating-desc":  return sorted.sort((a,b) => (b.rating ?? -1) - (a.rating ?? -1));
+    case "rating-asc":   return sorted.sort((a,b) => (a.rating ?? 99) - (b.rating ?? 99));
+    case "release-desc": return sorted.sort((a,b) => new Date(b.released||0) - new Date(a.released||0));
+    case "release-asc":  return sorted.sort((a,b) => new Date(a.released||0) - new Date(b.released||0));
+    case "alpha":        return sorted.sort((a,b) => a.title.localeCompare(b.title));
+    default:             return sorted;
+  }
+}
+
+function renderFiltered() {
+  const grid = document.getElementById("review-grid");
+  const empty = document.getElementById("empty");
+  const sentinel = document.getElementById("scroll-sentinel");
+  const indicator = document.getElementById("load-more-indicator");
+
+  const q = activeSearch.trim().toLowerCase();
+  let games = q
+    ? cache.games.filter(g => g.title.toLowerCase().includes(q))
+    : cache.games;
+
+  games = sortGames(games);
+
+  const isFiltering = q || activeSort !== "rating-desc";
+
+  if (games.length === 0 && !cache.hasMore) {
+    grid.style.display = "none";
+    empty.style.display = "";
+    return;
+  }
+
+  empty.style.display = "none";
+  grid.style.display = "";
+  grid.innerHTML = games.map(buildCard).join("");
+  initCardStagger();
+
+  // Only show infinite scroll when not actively filtering
+  if (sentinel) sentinel.style.height = (isFiltering || !cache.hasMore) ? "0" : "1px";
+  if (indicator && isFiltering) indicator.style.display = "none";
+}
+
+function updateSyncInfo() {
+  const info = document.getElementById("sync-info");
+  if (!cache.synced) return;
+  const syncTime = new Date(cache.synced);
+  const timeStr = syncTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  const dateStr = syncTime.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const more = cache.hasMore ? "+" : "";
+  info.textContent = `// Synced · ${dateStr} at ${timeStr} · ${cache.games.length}${more} entries`;
 }
 
 async function fetchBatch() {
-  if (loading || !cache.hasMore) return;
-  loading = true;
+  if (fetching || !cache.hasMore) return;
+  fetching = true;
 
-  const indicator  = document.getElementById("load-more-indicator");
-  const loadingEl  = document.getElementById("loading");
-  const errorEl    = document.getElementById("error");
-  const grid       = document.getElementById("review-grid");
-  const info       = document.getElementById("sync-info");
-  const empty      = document.getElementById("empty");
+  const indicator = document.getElementById("load-more-indicator");
+  const loadingEl = document.getElementById("loading");
+  const errorEl   = document.getElementById("error");
 
   if (indicator) indicator.style.display = "flex";
 
@@ -202,53 +252,56 @@ async function fetchBatch() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    const newGames = data.games || [];
-    cache.games.push(...newGames);
+    cache.games.push(...(data.games || []));
     cache.nextCursor = data.next_cursor || null;
     cache.hasMore    = data.has_more || false;
     cache.synced     = cache.synced || data.synced;
 
     loadingEl.style.display = "none";
+    document.getElementById("games-controls").style.display = "flex";
 
-    if (cache.games.length === 0) {
-      empty.style.display = "";
-      info.textContent = "// No completed games found";
-      return;
-    }
-
-    grid.style.display = "";
-    grid.insertAdjacentHTML("beforeend", newGames.map(buildCard).join(""));
-    initCardStagger();
-
-    const syncTime = new Date(cache.synced);
-    const timeStr  = syncTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-    const dateStr  = syncTime.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    info.textContent = `// Synced from Notion · ${dateStr} at ${timeStr} · ${cache.games.length} loaded`;
+    renderFiltered();
+    updateSyncInfo();
 
   } catch (err) {
     loadingEl.style.display = "none";
     errorEl.style.display   = "";
     errorEl.textContent     = err.message;
-    info.textContent        = "// Notion sync failed";
+    document.getElementById("sync-info").textContent = "// Notion sync failed";
   } finally {
-    loading = false;
+    fetching = false;
     if (indicator) indicator.style.display = "none";
   }
 }
 
-// Infinite scroll via IntersectionObserver
 document.addEventListener("DOMContentLoaded", () => {
+  // Search
+  const searchInput = document.getElementById("games-search");
+  searchInput.addEventListener("input", () => {
+    activeSearch = searchInput.value;
+    renderFiltered();
+  });
+
+  // Sort buttons
+  document.querySelectorAll(".games-filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".games-filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeSort = btn.dataset.sort;
+      renderFiltered();
+    });
+  });
+
+  // Initial fetch
   fetchBatch();
 
+  // Infinite scroll
   const sentinel = document.getElementById("scroll-sentinel");
-  if (!sentinel) return;
-
   const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting && cache.hasMore && !loading) {
+    if (entries[0].isIntersecting && cache.hasMore && !fetching && !activeSearch) {
       fetchBatch();
     }
-  }, { rootMargin: "300px" });
-
+  }, { rootMargin: "400px" });
   observer.observe(sentinel);
 });
 </script>

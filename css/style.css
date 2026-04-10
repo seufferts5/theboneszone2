@@ -807,6 +807,73 @@ ul { list-style: none; }
 .delay-3 { animation-delay: 0.15s; }
 .delay-4 { animation-delay: 0.2s; }
 
+/* ── GAMES SEARCH + FILTER ────────────────────────────────── */
+.games-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+.games-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+.games-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  color: var(--amber-dim);
+  pointer-events: none;
+}
+.games-search {
+  width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--text-muted);
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  padding: 0.55rem 0.75rem 0.55rem 2.1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.games-search::placeholder { color: var(--text-muted); }
+.games-search:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 1px var(--amber-dim);
+}
+.games-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--text-muted);
+}
+.games-filter-btn {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--text-muted);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.games-filter-btn:last-child { border-right: none; }
+.games-filter-btn:hover { background: var(--bg-3); color: var(--text); }
+.games-filter-btn.active {
+  background: var(--amber-glow);
+  color: var(--amber);
+  border-color: var(--amber-dim);
+}
+
 /* ── SCI-FI LOADER ────────────────────────────────────────── */
 .scifi-loader {
   display: flex;

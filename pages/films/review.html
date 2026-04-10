@@ -59,30 +59,38 @@
     /* poster aspect ratio */
     .review-cover { aspect-ratio: 2/3; max-width: 260px; }
 
-    /* backdrop behind poster */
+    /* backdrop behind poster, bleeding right */
     .review-cover {
       position: relative;
       overflow: visible;
     }
     .film-backdrop {
       position: absolute;
-      inset: -12px;
+      top: -20px;
+      bottom: -20px;
+      left: -20px;
+      right: -180px; /* bleeds past the poster toward the sidebar */
       z-index: 0;
       display: none;
-      border-radius: 2px;
+      pointer-events: none;
     }
     .film-backdrop img {
       width: 100%; height: 100%;
       object-fit: cover;
-      opacity: 0.18;
-      filter: blur(18px) saturate(1.8);
+      opacity: 0.45;
+      filter: blur(35px) saturate(2.5);
       display: block;
+      mask-image: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
     }
     .review-cover img,
     .review-cover #cover-placeholder {
       position: relative;
       z-index: 1;
     }
+
+    /* wider sidebar */
+    .review-sidebar { min-width: 340px; }
 
     /* review section accent */
     .review-section { border-color: rgba(106,176,212,0.2); }

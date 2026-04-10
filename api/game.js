@@ -112,27 +112,19 @@ module.exports = async (req, res) => {
 
     const gameplayText  = getRichText(p, "gameplay", "Gameplay");
     const graphicsText  = getRichText(p, "graphics and art direction", "Graphics and Art Direction");
-    const storyText     = getRichText(p, "story and worldbuilding", "Story and Worldbuilding");
-    const soundText     = getRichText(p, "sounds and music", "Sounds and Music");
+    const storyText     = getRichText(p, "story and worldbuilding", "Story and Worldbuilding", "story and world building", "Story and World Building");
+    const soundText     = getRichText(p, "sound and music", "Sound and Music", "sounds and music", "Sounds and Music");
     const screenshots   = getFiles(p, "personal screenshots", "Personal Screenshots");
 
     let coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
     if (!coverUrl) coverUrl = await getSteamImage(title);
 
-    const _debug = {};
-    for (const [key, val] of Object.entries(found.properties)) {
-      if (val.type === "rich_text") {
-        _debug[key] = (val.rich_text || []).map(t => t.plain_text).join("").length + " chars";
-      }
-    }
-
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "s-maxage=0, no-store");
+    res.setHeader("Cache-Control", "s-maxage=300");
     return res.status(200).json({
       title, rating, dev, genres, consoles, released, completed,
       notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title),
-      gameplayText, graphicsText, storyText, soundText, screenshots,
-      _debug
+      gameplayText, graphicsText, storyText, soundText, screenshots
     });
 
   } catch (err) {

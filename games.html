@@ -156,6 +156,25 @@ function buildHeaderCovers(games) {
   }).join("");
 }
 
+async function loadAllCovers() {
+  const all = [];
+  let cursor = null;
+  let hasMore = true;
+  while (hasMore) {
+    try {
+      const params = new URLSearchParams({ sort: "rating-desc", limit: 100 });
+      if (cursor) params.set("cursor", cursor);
+      const res  = await fetch(`/api/games?${params}`);
+      if (!res.ok) break;
+      const data = await res.json();
+      all.push(...(data.games || []));
+      cursor  = data.next_cursor || null;
+      hasMore = data.has_more || false;
+    } catch { break; }
+  }
+  buildHeaderCovers(all);
+}
+
 const cache = { games: [], nextCursor: null, hasMore: true, synced: null };
 let fetching  = false;
 let activeSort   = "rating-desc";
@@ -310,7 +329,6 @@ async function fetchBatch() {
     document.getElementById("games-controls").style.display = "flex";
 
     appendBatch(newGames);
-    buildHeaderCovers(cache.games);
     updateSyncInfo();
 
   } catch (err) {
@@ -362,8 +380,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Initial fetch
+  // Initial fetch + cover collage (run in parallel)
   fetchBatch();
+  loadAllCovers();
 
   // Infinite scroll
   const sentinel = document.getElementById("scroll-sentinel");

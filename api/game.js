@@ -30,6 +30,25 @@ function getFiles(props, ...names) {
   }).filter(Boolean);
 }
 
+async function findSteamUrl(title) {
+  try {
+    const searchRes = await fetch(
+      `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(title)}&l=english&cc=US`
+    );
+    if (!searchRes.ok) return null;
+    const data = await searchRes.json();
+    const items = data?.items || [];
+    if (!items.length) return null;
+    const q = title.toLowerCase();
+    const match = items.find(i => i.name.toLowerCase() === q)
+                || items.find(i => i.name.toLowerCase().startsWith(q));
+    if (!match) return null;
+    return `https://store.steampowered.com/app/${match.id}/`;
+  } catch {
+    return null;
+  }
+}
+
 module.exports = async (req, res) => {
   const token = process.env.NOTION_TOKEN;
   if (!token) {
@@ -102,9 +121,8 @@ module.exports = async (req, res) => {
     const soundText     = getRichText(p, "sound and music", "Sound and Music", "sounds and music", "Sounds and Music");
     const screenshots   = getFiles(p, "personal screenshots", "Personal Screenshots");
 
-    const coverUrl  = found.cover?.external?.url || found.cover?.file?.url || null;
-    const steamProp = getProp(p, "steam", "Steam", "steam url", "Steam URL", "steam link", "Steam Link");
-    const steamUrl  = steamProp?.url || null;
+    const coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
+    const steamUrl = await findSteamUrl(title);
 
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "s-maxage=300");

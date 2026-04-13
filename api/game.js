@@ -49,43 +49,6 @@ async function findSteamUrl(title) {
   }
 }
 
-async function findEpicUrl(title) {
-  try {
-    const query = `{
-      Catalog {
-        searchStore(keywords: ${JSON.stringify(title)}, category: "games/edition/base|bundles/games|editors", count: 5) {
-          elements {
-            title
-            urlSlug
-            catalogNs {
-              mappings(pageType: "productHome") {
-                pageSlug
-              }
-            }
-          }
-        }
-      }
-    }`;
-    const epicRes = await fetch("https://graphql.epicgames.com/graphql", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query })
-    });
-    if (!epicRes.ok) return null;
-    const data = await epicRes.json();
-    const elements = data?.data?.Catalog?.searchStore?.elements || [];
-    if (!elements.length) return null;
-    const q = title.toLowerCase();
-    const match = elements.find(e => e.title.toLowerCase() === q)
-                || elements.find(e => e.title.toLowerCase().startsWith(q));
-    if (!match) return null;
-    const slug = match.catalogNs?.mappings?.[0]?.pageSlug || match.urlSlug;
-    if (!slug) return null;
-    return `https://store.epicgames.com/en-US/p/${slug}`;
-  } catch {
-    return null;
-  }
-}
 
 module.exports = async (req, res) => {
   const token = process.env.NOTION_TOKEN;
@@ -159,8 +122,10 @@ module.exports = async (req, res) => {
     const soundText     = getRichText(p, "sound and music", "Sound and Music", "sounds and music", "Sounds and Music");
     const screenshots   = getFiles(p, "personal screenshots", "Personal Screenshots");
 
-    const coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
-    const storeUrl = await findSteamUrl(title) || await findEpicUrl(title);
+    const coverUrl    = found.cover?.external?.url || found.cover?.file?.url || null;
+    const manualProp  = getProp(p, "store url", "Store URL", "store link", "Store Link", "steam", "Steam");
+    const manualUrl   = manualProp?.url || null;
+    const storeUrl    = manualUrl || await findSteamUrl(title);
 
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "s-maxage=300");

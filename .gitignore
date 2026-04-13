@@ -1,6 +1,9 @@
 # Downloaded cover images — stored locally only, not committed
 assets/images/covers/
 
+# Vercel build cache
+.vercel/cache/
+
 # Environment secrets
 .env
 

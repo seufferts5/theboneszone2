@@ -28,6 +28,7 @@ if (fs.existsSync(envPath)) {
 
 const DATABASE_ID  = "3a7ccf9e-b5b8-40de-ab98-c01372ca894a";
 const COVERS_DIR   = path.join(__dirname, "..", "assets", "images", "covers");
+const CACHE_DIR    = path.join(__dirname, "..", ".vercel", "cache", "covers");
 const MANIFEST_OUT = path.join(__dirname, "..", "js", "cover-manifest.js");
 const TOKEN        = process.env.NOTION_TOKEN;
 
@@ -101,8 +102,28 @@ async function downloadImage(url, dest) {
   fs.writeFileSync(dest, Buffer.from(buf));
 }
 
+function restoreFromCache() {
+  if (!fs.existsSync(CACHE_DIR)) return 0;
+  if (!fs.existsSync(COVERS_DIR)) fs.mkdirSync(COVERS_DIR, { recursive: true });
+  const files = fs.readdirSync(CACHE_DIR);
+  files.forEach(f => {
+    const src  = path.join(CACHE_DIR, f);
+    const dest = path.join(COVERS_DIR, f);
+    if (!fs.existsSync(dest)) fs.copyFileSync(src, dest);
+  });
+  return files.length;
+}
+
+function saveToCache(filename) {
+  if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
+  fs.copyFileSync(path.join(COVERS_DIR, filename), path.join(CACHE_DIR, filename));
+}
+
 async function main() {
   if (!fs.existsSync(COVERS_DIR)) fs.mkdirSync(COVERS_DIR, { recursive: true });
+
+  const restored = restoreFromCache();
+  if (restored > 0) console.log(`Restored ${restored} images from build cache.\n`);
 
   const games    = await fetchAllGames();
   const manifest = {};
@@ -133,6 +154,7 @@ async function main() {
 
     try {
       await downloadImage(game.coverUrl, dest);
+      saveToCache(filename);
       manifest[game.slug] = webPath;
       console.log("✔  saved");
       downloaded++;

@@ -79,6 +79,11 @@ function toggleScreenshots(btn) {
   }
 }
 
+// ── SERVICE WORKER (image cache) ─────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initFilters();

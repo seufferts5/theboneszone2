@@ -66,6 +66,7 @@
 </nav>
 
 <header class="page-header">
+  <div id="header-covers" class="header-covers"></div>
   <div class="container page-header-inner">
     <p class="page-tag animate-in">Subject: Games</p>
     <h1 class="page-title animate-in delay-1">Game<br><span class="hollow">Reviews</span></h1>
@@ -141,6 +142,19 @@
 <script src="js/main.js"></script>
 <script>
 const COVER_IMAGES = { "prey": "assets/images/prey-2017.png" };
+
+function buildHeaderCovers(games) {
+  const el = document.getElementById("header-covers");
+  if (!el || el.dataset.loaded) return;
+  const pool = games.filter(g => COVER_IMAGES[g.slug] || g.coverUrl);
+  if (pool.length < 2) return;
+  el.dataset.loaded = "1";
+  const picks = pool.sort(() => Math.random() - 0.5).slice(0, 9);
+  el.innerHTML = picks.map(g => {
+    const src = COVER_IMAGES[g.slug] || g.coverUrl;
+    return `<img src="${src}" alt="" loading="lazy">`;
+  }).join("");
+}
 
 const cache = { games: [], nextCursor: null, hasMore: true, synced: null };
 let fetching  = false;
@@ -296,6 +310,7 @@ async function fetchBatch() {
     document.getElementById("games-controls").style.display = "flex";
 
     appendBatch(newGames);
+    buildHeaderCovers(cache.games);
     updateSyncInfo();
 
   } catch (err) {

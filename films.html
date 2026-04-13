@@ -71,6 +71,7 @@
 </nav>
 
 <header class="page-header">
+  <div id="header-covers" class="header-covers"></div>
   <div class="container page-header-inner">
     <p class="page-tag animate-in">Subject: Films</p>
     <h1 class="page-title animate-in delay-1">Film<br><span class="hollow">Reviews</span></h1>
@@ -131,6 +132,16 @@
 const cache = { films: [] };
 let activeSort   = "date-desc";
 let activeSearch = "";
+
+function buildHeaderCovers(films) {
+  const el = document.getElementById("header-covers");
+  if (!el || el.dataset.loaded) return;
+  const pool = films.filter(f => f.posterUrl);
+  if (pool.length < 2) return;
+  el.dataset.loaded = "1";
+  const picks = pool.sort(() => Math.random() - 0.5).slice(0, 9);
+  el.innerHTML = picks.map(f => `<img src="${f.posterUrl}" alt="" loading="lazy">`).join("");
+}
 
 function formatStars(rating) { return rating === null ? "— / 5" : `${rating} / 5`; }
 function formatDate(pubDate) {
@@ -222,6 +233,7 @@ async function loadFilms() {
 
     controls.style.display = "flex";
     renderFiltered();
+    buildHeaderCovers(cache.films);
     info.textContent = `// Synced from Letterboxd · ${cache.films.length} reviews`;
 
   } catch (err) {

@@ -1,0 +1,9 @@
+# Downloaded cover images — stored locally only, not committed
+assets/images/covers/
+
+# Environment secrets
+.env
+
+# OS
+.DS_Store
+Thumbs.db

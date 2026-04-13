@@ -145,16 +145,23 @@
 
 function buildHeaderCovers(games) {
   const el = document.getElementById("header-covers");
-  if (!el || el.dataset.loaded) return;
+  if (!el) return;
   const pool = games.filter(g => COVER_IMAGES[g.slug] || g.coverUrl);
   if (pool.length < 2) return;
+  // Only rebuild if we have meaningfully more images than last time
+  const prev = parseInt(el.dataset.poolSize || "0");
+  if (pool.length - prev < 3 && el.dataset.loaded) return;
+  el.dataset.poolSize = pool.length;
   el.dataset.loaded = "1";
   const picks = pool.sort(() => Math.random() - 0.5).slice(0, 6);
   el.innerHTML = picks.map(g => {
     const src = COVER_IMAGES[g.slug] || g.coverUrl;
     return `<img src="${src}" alt="" loading="eager" decoding="async">`;
   }).join("");
-  initCoverParallax();
+  if (!el.dataset.parallax) {
+    initCoverParallax();
+    el.dataset.parallax = "1";
+  }
 }
 
 function initCoverParallax() {
@@ -327,7 +334,7 @@ async function fetchBatch() {
     document.getElementById("games-controls").style.display = "flex";
 
     appendBatch(newGames);
-    buildHeaderCovers(cache.games);
+    buildHeaderCovers(cache.games);  // grows pool as more batches load
     updateSyncInfo();
 
   } catch (err) {

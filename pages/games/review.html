@@ -266,6 +266,14 @@ async function loadGame() {
       document.getElementById("cover-placeholder").style.display = "none";
     }
 
+    // Steam link on cover click
+    if (game.steamUrl) {
+      const wrap = document.getElementById("cover-wrap");
+      wrap.style.cursor = "pointer";
+      wrap.title = "View on Steam";
+      wrap.addEventListener("click", () => window.open(game.steamUrl, "_blank", "noopener"));
+    }
+
     // Meta
     document.getElementById("genre-str").textContent = game.genres.slice(0,3).join(" · ");
     document.getElementById("headline").textContent  = game.title;

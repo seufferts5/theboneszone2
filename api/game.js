@@ -102,14 +102,16 @@ module.exports = async (req, res) => {
     const soundText     = getRichText(p, "sound and music", "Sound and Music", "sounds and music", "Sounds and Music");
     const screenshots   = getFiles(p, "personal screenshots", "Personal Screenshots");
 
-    const coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
+    const coverUrl  = found.cover?.external?.url || found.cover?.file?.url || null;
+    const steamProp = getProp(p, "steam", "Steam", "steam url", "Steam URL", "steam link", "Steam Link");
+    const steamUrl  = steamProp?.url || null;
 
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "s-maxage=300");
     return res.status(200).json({
       title, rating, dev, genres, consoles, released, completed,
       notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title),
-      gameplayText, graphicsText, storyText, soundText, screenshots
+      gameplayText, graphicsText, storyText, soundText, screenshots, steamUrl
     });
 
   } catch (err) {

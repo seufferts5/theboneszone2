@@ -202,6 +202,7 @@ ul { list-style: none; }
   gap: 3px;
   z-index: 0;
   pointer-events: none;
+  transition: transform 0.25s ease-out;
   -webkit-mask-image: linear-gradient(97deg, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.65) 32%, black 48%);
   mask-image: linear-gradient(97deg, transparent 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.65) 32%, black 48%);
 }

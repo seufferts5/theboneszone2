@@ -154,6 +154,22 @@ function buildHeaderCovers(games) {
     const src = COVER_IMAGES[g.slug] || g.coverUrl;
     return `<img src="${src}" alt="" loading="lazy">`;
   }).join("");
+  initCoverParallax();
+}
+
+function initCoverParallax() {
+  const header = document.querySelector(".page-header");
+  const covers = document.getElementById("header-covers");
+  if (!header || !covers) return;
+  header.addEventListener("mousemove", (e) => {
+    const rect  = header.getBoundingClientRect();
+    const xPct  = (e.clientX - rect.left) / rect.width; // 0 = left, 1 = right
+    const shift = (xPct - 0.5) * 40; // -20px to +20px
+    covers.style.transform = `translateX(${shift}px)`;
+  });
+  header.addEventListener("mouseleave", () => {
+    covers.style.transform = "translateX(0)";
+  });
 }
 
 async function loadAllCovers() {

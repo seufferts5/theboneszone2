@@ -133,6 +133,21 @@ const cache = { films: [] };
 let activeSort   = "date-desc";
 let activeSearch = "";
 
+function initCoverParallax() {
+  const header = document.querySelector(".page-header");
+  const covers = document.getElementById("header-covers");
+  if (!header || !covers) return;
+  header.addEventListener("mousemove", (e) => {
+    const rect  = header.getBoundingClientRect();
+    const xPct  = (e.clientX - rect.left) / rect.width;
+    const shift = (xPct - 0.5) * 40;
+    covers.style.transform = `translateX(${shift}px)`;
+  });
+  header.addEventListener("mouseleave", () => {
+    covers.style.transform = "translateX(0)";
+  });
+}
+
 function buildHeaderCovers(films) {
   const el = document.getElementById("header-covers");
   if (!el || el.dataset.loaded) return;
@@ -141,6 +156,7 @@ function buildHeaderCovers(films) {
   el.dataset.loaded = "1";
   const picks = pool.sort(() => Math.random() - 0.5).slice(0, 9);
   el.innerHTML = picks.map(f => `<img src="${f.posterUrl}" alt="" loading="lazy">`).join("");
+  initCoverParallax();
 }
 
 function formatStars(rating) { return rating === null ? "— / 5" : `${rating} / 5`; }

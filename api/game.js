@@ -49,6 +49,44 @@ async function findSteamUrl(title) {
   }
 }
 
+async function findEpicUrl(title) {
+  try {
+    const query = `{
+      Catalog {
+        searchStore(keywords: ${JSON.stringify(title)}, category: "games/edition/base|bundles/games|editors", count: 5) {
+          elements {
+            title
+            urlSlug
+            catalogNs {
+              mappings(pageType: "productHome") {
+                pageSlug
+              }
+            }
+          }
+        }
+      }
+    }`;
+    const epicRes = await fetch("https://graphql.epicgames.com/graphql", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    });
+    if (!epicRes.ok) return null;
+    const data = await epicRes.json();
+    const elements = data?.data?.Catalog?.searchStore?.elements || [];
+    if (!elements.length) return null;
+    const q = title.toLowerCase();
+    const match = elements.find(e => e.title.toLowerCase() === q)
+                || elements.find(e => e.title.toLowerCase().startsWith(q));
+    if (!match) return null;
+    const slug = match.catalogNs?.mappings?.[0]?.pageSlug || match.urlSlug;
+    if (!slug) return null;
+    return `https://store.epicgames.com/en-US/p/${slug}`;
+  } catch {
+    return null;
+  }
+}
+
 module.exports = async (req, res) => {
   const token = process.env.NOTION_TOKEN;
   if (!token) {
@@ -122,14 +160,14 @@ module.exports = async (req, res) => {
     const screenshots   = getFiles(p, "personal screenshots", "Personal Screenshots");
 
     const coverUrl = found.cover?.external?.url || found.cover?.file?.url || null;
-    const steamUrl = await findSteamUrl(title);
+    const storeUrl = await findSteamUrl(title) || await findEpicUrl(title);
 
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "s-maxage=300");
     return res.status(200).json({
       title, rating, dev, genres, consoles, released, completed,
       notes, mechanics, story, art, music, sfx, coverUrl, slug: toSlug(title),
-      gameplayText, graphicsText, storyText, soundText, screenshots, steamUrl
+      gameplayText, graphicsText, storyText, soundText, screenshots, storeUrl
     });
 
   } catch (err) {

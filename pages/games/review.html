@@ -266,12 +266,12 @@ async function loadGame() {
       document.getElementById("cover-placeholder").style.display = "none";
     }
 
-    // Steam link on cover click
-    if (game.steamUrl) {
+    // Store link on cover click (Steam or Epic)
+    if (game.storeUrl) {
       const wrap = document.getElementById("cover-wrap");
       wrap.style.cursor = "pointer";
-      wrap.title = "View on Steam";
-      wrap.addEventListener("click", () => window.open(game.steamUrl, "_blank", "noopener"));
+      wrap.title = game.storeUrl.includes("epicgames") ? "View on Epic Games Store" : "View on Steam";
+      wrap.addEventListener("click", () => window.open(game.storeUrl, "_blank", "noopener"));
     }
 
     // Meta

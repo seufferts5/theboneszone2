@@ -154,8 +154,8 @@ function buildHeaderCovers(films) {
   const pool = films.filter(f => f.posterUrl);
   if (pool.length < 2) return;
   el.dataset.loaded = "1";
-  const picks = pool.sort(() => Math.random() - 0.5).slice(0, 9);
-  el.innerHTML = picks.map(f => `<img src="${f.posterUrl}" alt="" loading="lazy">`).join("");
+  const picks = pool.sort(() => Math.random() - 0.5).slice(0, 6);
+  el.innerHTML = picks.map(f => `<img src="${f.posterUrl}" alt="" loading="eager" decoding="async">`).join("");
   initCoverParallax();
 }
 

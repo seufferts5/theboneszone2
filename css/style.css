@@ -211,8 +211,18 @@ ul { list-style: none; }
   width: auto;
   object-fit: cover;
   display: block;
-  opacity: 0.45;
+  opacity: 0;
+  animation: coverFadeIn 0.6s ease forwards;
+  will-change: opacity;
 }
+@keyframes coverFadeIn {
+  to { opacity: 0.45; }
+}
+.header-covers img:nth-child(2) { animation-delay: 0.08s; }
+.header-covers img:nth-child(3) { animation-delay: 0.16s; }
+.header-covers img:nth-child(4) { animation-delay: 0.24s; }
+.header-covers img:nth-child(5) { animation-delay: 0.32s; }
+.header-covers img:nth-child(6) { animation-delay: 0.40s; }
 .page-tag {
   font-family: var(--mono);
   font-size: 0.7rem;

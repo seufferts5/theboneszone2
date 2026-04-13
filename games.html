@@ -149,11 +149,7 @@ function buildHeaderCovers(games) {
   const pool = games.filter(g => COVER_IMAGES[g.slug] || g.coverUrl);
   if (pool.length < 2) return;
   el.dataset.loaded = "1";
-  // Prefer local assets (fast) over Notion S3 (slow), then shuffle
-  const withLocal = pool.filter(g => COVER_IMAGES[g.slug]);
-  const withRemote = pool.filter(g => !COVER_IMAGES[g.slug] && g.coverUrl);
-  const sorted = [...withLocal, ...withRemote.sort(() => Math.random() - 0.5)];
-  const picks = sorted.slice(0, 6);
+  const picks = pool.sort(() => Math.random() - 0.5).slice(0, 6);
   el.innerHTML = picks.map(g => {
     const src = COVER_IMAGES[g.slug] || g.coverUrl;
     return `<img src="${src}" alt="" loading="eager" decoding="async">`;

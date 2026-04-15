@@ -45,20 +45,6 @@ function parseRSS(xml) {
   return items;
 }
 
-async function getTMDBGenreMap(tmdbKey) {
-  try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/genre/movie/list?api_key=${tmdbKey}&language=en-US`,
-      { signal: AbortSignal.timeout(4000) }
-    );
-    if (!res.ok) return {};
-    const data = await res.json();
-    const map = {};
-    (data.genres || []).forEach(g => { map[g.id] = g.name; });
-    return map;
-  } catch { return {}; }
-}
-
 async function getTMDBData(title, year, tmdbKey) {
   try {
     const q = encodeURIComponent(title);
@@ -75,7 +61,6 @@ async function getTMDBData(title, year, tmdbKey) {
     return {
       posterUrl:   result.poster_path   ? `https://image.tmdb.org/t/p/w500${result.poster_path}`   : null,
       backdropUrl: result.backdrop_path ? `https://image.tmdb.org/t/p/w1280${result.backdrop_path}` : null,
-      genreIds:    result.genre_ids || [],
     };
   } catch { return {}; }
 }
@@ -98,15 +83,11 @@ module.exports = async (req, res) => {
     const film  = items.find(f => f.slug === slug);
     if (!film) return res.status(404).json({ error: "Film not found" });
 
-    const [genreMap, tmdb] = await Promise.all([
-      getTMDBGenreMap(tmdbKey),
-      getTMDBData(film.title, film.year, tmdbKey)
-    ]);
-    const genres = (tmdb.genreIds || []).map(id => genreMap[id]).filter(Boolean);
+    const tmdb = await getTMDBData(film.title, film.year, tmdbKey);
 
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "s-maxage=600");
-    return res.status(200).json({ ...film, ...tmdb, genres });
+    return res.status(200).json({ ...film, ...tmdb });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });

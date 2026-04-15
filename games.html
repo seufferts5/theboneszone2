@@ -97,7 +97,6 @@
           <button class="games-filter-btn" data-sort="alpha">A–Z</button>
         </div>
       </div>
-      <div class="genre-pills" id="genre-pills" style="display:none"></div>
 
       <!-- Loading state -->
       <div class="loading-state" id="loading">
@@ -182,10 +181,9 @@ function initCoverParallax() {
 
 
 const cache = { games: [], nextCursor: null, hasMore: true, synced: null };
-let fetching     = false;
+let fetching  = false;
 let activeSort   = "rating-desc";
 let activeSearch = "";
-let activeGenre  = "";
 
 function getReviewHref(slug) { return `/games/${encodeURIComponent(slug)}`; }
 function formatDate(iso) {
@@ -223,52 +221,19 @@ function buildCard(game) {
 }
 
 
-function buildGenrePills(games) {
-  const container = document.getElementById("genre-pills");
-  if (!container) return;
-  const genreSet = new Set();
-  games.forEach(g => g.genres.forEach(genre => genreSet.add(genre)));
-  const genres = [...genreSet].sort();
-  if (genres.length === 0) { container.style.display = "none"; return; }
-  container.style.display = "flex";
-  container.innerHTML =
-    `<button class="genre-pill${activeGenre === "" ? " active" : ""}" data-genre="">All</button>` +
-    genres.map(g =>
-      `<button class="genre-pill${g === activeGenre ? " active" : ""}" data-genre="${g}">${g}</button>`
-    ).join("");
-  container.querySelectorAll(".genre-pill").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const genre = btn.dataset.genre;
-      if (genre === activeGenre) return;
-      activeGenre = genre;
-      if (activeGenre && cache.hasMore) {
-        container.querySelectorAll(".genre-pill").forEach(b => b.disabled = true);
-        await fetchAll();
-        container.querySelectorAll(".genre-pill").forEach(b => b.disabled = false);
-      }
-      buildGenrePills(cache.games);
-      const url = new URL(window.location);
-      if (activeGenre) url.searchParams.set("genre", activeGenre);
-      else url.searchParams.delete("genre");
-      history.replaceState({}, "", url);
-      renderFiltered();
-    });
-  });
-}
-
 function renderFiltered() {
-  // Full re-render — only called when search/sort/genre changes
+  // Full re-render — only called when search/sort changes
   const grid      = document.getElementById("review-grid");
   const empty     = document.getElementById("empty");
   const sentinel  = document.getElementById("scroll-sentinel");
   const indicator = document.getElementById("load-more-indicator");
 
   const q = activeSearch.trim().toLowerCase();
-  let games = cache.games;
-  if (q) games = games.filter(g => g.title.toLowerCase().includes(q));
-  if (activeGenre) games = games.filter(g => g.genres.includes(activeGenre));
+  let games = q
+    ? cache.games.filter(g => g.title.toLowerCase().includes(q))
+    : cache.games;
 
-  const isFiltering = q || activeGenre || activeSort !== "rating-desc";
+  const isFiltering = q || activeSort !== "rating-desc";
 
   if (games.length === 0) {
     grid.style.display = "none";
@@ -370,7 +335,6 @@ async function fetchBatch() {
 
     appendBatch(newGames);
     buildHeaderCovers(cache.games);  // grows pool as more batches load
-    buildGenrePills(cache.games);    // refresh genre list as more genres appear
     updateSyncInfo();
 
   } catch (err) {
@@ -385,11 +349,6 @@ async function fetchBatch() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Pre-select genre from URL param
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlGenre  = urlParams.get("genre");
-  if (urlGenre) activeGenre = urlGenre;
-
   // Search — fetch all remaining pages first, then filter
   const searchInput = document.getElementById("games-search");
   searchInput.addEventListener("input", async () => {
@@ -417,13 +376,11 @@ document.addEventListener("DOMContentLoaded", () => {
       cache.games = [];
       cache.nextCursor = null;
       cache.hasMore = true;
-      activeGenre = "";
 
       const grid = document.getElementById("review-grid");
       grid.innerHTML = "";
       grid.style.display = "none";
       document.getElementById("loading").style.display = "flex";
-      document.getElementById("genre-pills").style.display = "none";
 
       fetchBatch();
     });

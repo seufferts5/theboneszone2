@@ -166,6 +166,7 @@
           <div class="card-meta" style="margin-bottom:.5rem">
             <span class="type-pill film">Film</span>
             <span id="year-str"></span>
+            <span id="genre-str"></span>
           </div>
 
           <h1 class="review-headline" id="headline"></h1>
@@ -309,6 +310,14 @@ async function loadFilm() {
     document.getElementById("headline").textContent  = film.title;
     document.getElementById("year-str").textContent  = film.year || "";
     document.getElementById("byline-watched").textContent = fmtDate(film.pubDate);
+
+    // Genre links
+    if (film.genres && film.genres.length > 0) {
+      document.getElementById("genre-str").innerHTML =
+        film.genres.slice(0, 3)
+          .map(g => `<a href="/films.html?genre=${encodeURIComponent(g)}" class="genre-link film">${g}</a>`)
+          .join(`<span style="color:var(--text-muted)"> · </span>`);
+    }
     document.getElementById("letterboxd-link").href  = film.link || "#";
     document.getElementById("cover-wrap").href = film.link || "#";
 
@@ -336,7 +345,8 @@ async function loadFilm() {
     // Info table
     document.getElementById("info-table").innerHTML =
       infoRow("Year",    film.year) +
-      infoRow("Watched", fmtDate(film.pubDate));
+      infoRow("Watched", fmtDate(film.pubDate)) +
+      infoRow("Genre",   film.genres && film.genres.length ? film.genres.slice(0,3).join(", ") : null);
 
     // Review text as collapsible section
     const container = document.getElementById("review-sections");

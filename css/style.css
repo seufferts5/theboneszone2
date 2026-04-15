@@ -912,6 +912,41 @@ ul { list-style: none; }
   border-color: var(--amber-dim);
 }
 
+/* ── GENRE PILLS ─────────────────────────────────────────── */
+.genre-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.genre-pill {
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  border-radius: 2rem;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.genre-pill:hover { background: var(--bg-3); color: var(--text); border-color: var(--text-dim); }
+.genre-pill.active { background: var(--amber-glow); color: var(--amber); border-color: var(--amber-dim); }
+.genre-pill.film.active { background: var(--film-dim); color: var(--film); border-color: rgba(106,176,212,0.4); }
+.genre-pill:disabled { opacity: 0.5; cursor: wait; }
+
+.genre-link {
+  color: var(--text-dim);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.genre-link:hover { color: var(--amber); border-bottom-color: var(--amber-dim); }
+.genre-link.film:hover { color: var(--film); border-bottom-color: rgba(106,176,212,0.4); }
+
 /* ── SCI-FI LOADER ────────────────────────────────────────── */
 .scifi-loader {
   display: flex;

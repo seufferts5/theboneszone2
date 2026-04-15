@@ -102,6 +102,7 @@
           <button class="games-filter-btn" data-sort="alpha">A–Z</button>
         </div>
       </div>
+      <div class="genre-pills" id="genre-pills" style="display:none"></div>
 
       <div class="loading-state" id="loading">
         <span class="loading-dot"></span>
@@ -132,6 +133,7 @@
 const cache = { films: [] };
 let activeSort   = "date-desc";
 let activeSearch = "";
+let activeGenre  = "";
 
 function initCoverParallax() {
   const header = document.querySelector(".page-header");
@@ -206,13 +208,41 @@ function sortFilms(films) {
   }
 }
 
+function buildGenrePills(films) {
+  const container = document.getElementById("genre-pills");
+  if (!container) return;
+  const genreSet = new Set();
+  films.forEach(f => (f.genres || []).forEach(g => genreSet.add(g)));
+  const genres = [...genreSet].sort();
+  if (genres.length === 0) { container.style.display = "none"; return; }
+  container.style.display = "flex";
+  container.innerHTML =
+    `<button class="genre-pill film${activeGenre === "" ? " active" : ""}" data-genre="">All</button>` +
+    genres.map(g =>
+      `<button class="genre-pill film${g === activeGenre ? " active" : ""}" data-genre="${g}">${g}</button>`
+    ).join("");
+  container.querySelectorAll(".genre-pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const genre = btn.dataset.genre;
+      if (genre === activeGenre) return;
+      activeGenre = genre;
+      buildGenrePills(cache.films);
+      const url = new URL(window.location);
+      if (activeGenre) url.searchParams.set("genre", activeGenre);
+      else url.searchParams.delete("genre");
+      history.replaceState({}, "", url);
+      renderFiltered();
+    });
+  });
+}
+
 function renderFiltered() {
   const grid  = document.getElementById("review-grid");
   const empty = document.getElementById("empty");
   const q = activeSearch.trim().toLowerCase();
-  let films = q
-    ? cache.films.filter(f => f.title.toLowerCase().includes(q))
-    : sortFilms(cache.films);
+  let films = sortFilms(cache.films);
+  if (q) films = films.filter(f => f.title.toLowerCase().includes(q));
+  if (activeGenre) films = films.filter(f => (f.genres || []).includes(activeGenre));
   if (films.length === 0) {
     grid.style.display = "none";
     empty.style.display = "";
@@ -250,6 +280,7 @@ async function loadFilms() {
     controls.style.display = "flex";
     renderFiltered();
     buildHeaderCovers(cache.films);
+    buildGenrePills(cache.films);
     info.textContent = `// Synced from Letterboxd · ${cache.films.length} reviews`;
 
   } catch (err) {
@@ -261,6 +292,10 @@ async function loadFilms() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Pre-select genre from URL param
+  const urlGenre = new URLSearchParams(window.location.search).get("genre");
+  if (urlGenre) activeGenre = urlGenre;
+
   loadFilms();
 
   document.getElementById("films-search").addEventListener("input", (e) => {

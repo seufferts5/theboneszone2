@@ -277,8 +277,10 @@ async function loadGame() {
       wrap.addEventListener("click", () => window.open(game.storeUrl, "_blank", "noopener"));
     }
 
-    // Meta
-    document.getElementById("genre-str").textContent = game.genres.slice(0,3).join(" · ");
+    // Meta — genre chips link back to games list filtered by genre
+    document.getElementById("genre-str").innerHTML = game.genres.slice(0,3)
+      .map(g => `<a href="/games.html?genre=${encodeURIComponent(g)}" class="genre-link">${g}</a>`)
+      .join(`<span style="color:var(--text-muted)"> · </span>`);
     document.getElementById("headline").textContent  = game.title;
     document.getElementById("byline-dev").textContent = `${game.dev}`;
     document.getElementById("byline-platform").textContent = game.consoles.slice(0,2).join(" / ") || "PC";

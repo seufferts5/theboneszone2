@@ -51,6 +51,20 @@ function parseRSS(xml) {
   return items;
 }
 
+async function getTMDBGenreMap(tmdbKey) {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/genre/movie/list?api_key=${tmdbKey}&language=en-US`,
+      { signal: AbortSignal.timeout(4000) }
+    );
+    if (!res.ok) return {};
+    const data = await res.json();
+    const map = {};
+    (data.genres || []).forEach(g => { map[g.id] = g.name; });
+    return map;
+  } catch { return {}; }
+}
+
 async function getTMDBPoster(title, year, tmdbKey) {
   try {
     const q = encodeURIComponent(title);
@@ -59,12 +73,14 @@ async function getTMDBPoster(title, year, tmdbKey) {
       `https://api.themoviedb.org/3/search/movie?api_key=${tmdbKey}&query=${q}${yearParam}&language=en-US&page=1`,
       { signal: AbortSignal.timeout(4000) }
     );
-    if (!res.ok) return null;
+    if (!res.ok) return {};
     const data = await res.json();
     const result = data.results?.[0];
-    if (!result?.poster_path) return null;
-    return `https://image.tmdb.org/t/p/w500${result.poster_path}`;
-  } catch { return null; }
+    return {
+      posterUrl:  result?.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : null,
+      genreIds:   result?.genre_ids || [],
+    };
+  } catch { return {}; }
 }
 
 module.exports = async (req, res) => {
@@ -82,10 +98,16 @@ module.exports = async (req, res) => {
 
     const items = parseRSS(xml);
 
-    // Fetch TMDB posters in parallel
-    const films = await Promise.all(items.map(async (item) => {
-      const posterUrl = await getTMDBPoster(item.title, item.year, tmdbKey);
-      const slug = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    // Fetch genre map + TMDB data in parallel
+    const [genreMap, ...tmdbDataList] = await Promise.all([
+      getTMDBGenreMap(tmdbKey),
+      ...items.map(item => getTMDBPoster(item.title, item.year, tmdbKey))
+    ]);
+
+    const films = items.map((item, i) => {
+      const tmdb   = tmdbDataList[i] || {};
+      const genres = (tmdb.genreIds || []).map(id => genreMap[id]).filter(Boolean);
+      const slug   = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       return {
         title:     item.title,
         year:      item.year,
@@ -93,10 +115,11 @@ module.exports = async (req, res) => {
         review:    item.review,
         link:      item.link,
         pubDate:   item.pubDate,
-        posterUrl,
+        posterUrl: tmdb.posterUrl || null,
+        genres,
         slug
       };
-    }));
+    });
 
     const sort = req.query?.sort || "date-desc";
     const sorted = [...films].sort((a, b) => {

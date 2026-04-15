@@ -185,7 +185,7 @@ let fetching  = false;
 let activeSort   = "rating-desc";
 let activeSearch = "";
 
-function getReviewHref(slug) { return `pages/games/review.html?slug=${encodeURIComponent(slug)}`; }
+function getReviewHref(slug) { return `/games/${encodeURIComponent(slug)}`; }
 function formatDate(iso) {
   if (!iso) return "Unknown";
   return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });

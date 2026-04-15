@@ -116,7 +116,7 @@ function buildCard(game) {
     ? `<img src="${img}" alt="${game.title}" loading="lazy">`
     : `<div class="card-thumb-placeholder">[ no image ]</div>`;
   return `
-    <a href="pages/games/review.html?slug=${encodeURIComponent(slug)}" class="card animate-in" data-type="game">
+    <a href="/games/${encodeURIComponent(slug)}" class="card animate-in" data-type="game">
       <div class="card-thumb">
         ${thumbContent}
         <span class="card-score-badge" ${badgeStyle}>${game.rating ?? "—"} / 5</span>

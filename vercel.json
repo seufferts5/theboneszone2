@@ -1,4 +1,7 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/games/:slug", "destination": "/api/game-page?slug=:slug" }
+  ]
 }

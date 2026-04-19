@@ -242,26 +242,14 @@ function verdict(r) {
   if (r >= 1)   return "Poor";
   return "Avoid";
 }
-function verdictColor(r) {
-  if (r === null) return "var(--text-dim)";
-  if (r >= 5)   return "#f5e6a3";
-  if (r >= 4.5) return "var(--amber)";
-  if (r >= 4)   return "#b8d48a";
-  if (r >= 3.5) return "#7aab6e";
-  if (r >= 3)   return "var(--text-dim)";
-  if (r >= 2)   return "#c4a84a";
-  if (r >= 1)   return "#c46a2e";
-  return "var(--danger)";
-}
-function scoreDots(r, color) {
+function scoreDots(r) {
   if (r === null) return "";
-  const c      = color || "var(--film)";
   const filled = Math.floor(r);
   const half   = (r % 1) >= 0.5;
   let html = "";
   for (let i = 0; i < 5; i++) {
-    if (i < filled) html += `<div class="score-dot filled" style="background:${c};border-color:${c}"></div>`;
-    else if (i === filled && half) html += `<div class="score-dot" style="background:linear-gradient(90deg,${c} 50%,transparent 50%);border-color:${c}"></div>`;
+    if (i < filled) html += `<div class="score-dot filled"></div>`;
+    else if (i === filled && half) html += `<div class="score-dot" style="background:linear-gradient(90deg,var(--film) 50%,transparent 50%);border-color:var(--film)"></div>`;
     else html += `<div class="score-dot"></div>`;
   }
   return html;
@@ -341,12 +329,9 @@ async function loadFilm() {
     }
 
     // Score
-    const vColor = verdictColor(film.rating);
     document.getElementById("score-num").textContent = film.rating !== null ? film.rating : "—";
-    document.getElementById("score-num").style.color = vColor;
-    document.getElementById("score-dots").innerHTML  = scoreDots(film.rating, vColor);
+    document.getElementById("score-dots").innerHTML  = scoreDots(film.rating);
     document.getElementById("verdict").textContent   = verdict(film.rating);
-    document.getElementById("verdict").style.color   = vColor;
 
     // Info table
     document.getElementById("info-table").innerHTML =

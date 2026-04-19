@@ -10,7 +10,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 3rem 0;
+      padding: 2rem 0;
       font-family: var(--mono);
       font-size: 0.62rem;
       letter-spacing: 0.18em;
@@ -27,7 +27,7 @@
     .loading-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes blink { to { opacity: 0.15; } }
     .error-state {
-      padding: 3rem 0;
+      padding: 2rem 0;
       font-family: var(--mono);
       font-size: 0.62rem;
       letter-spacing: 0.14em;
@@ -70,14 +70,6 @@
     <div class="container">
       <div class="section-label">Latest transmissions</div>
 
-      <!-- Filter bar -->
-      <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="game">Games</button>
-        <button class="filter-btn" data-filter="film">Films</button>
-        <button class="filter-btn" data-filter="book">Books</button>
-      </div>
-
       <div class="loading-state" id="home-loading">
         <span class="loading-dot"></span>
         <span class="loading-dot"></span>
@@ -85,7 +77,15 @@
         <span>Querying Notion database</span>
       </div>
       <div class="error-state" id="home-error" style="display:none"></div>
-      <div class="card-grid" id="review-grid" style="display:none"></div>
+      <div class="latest-list" id="latest-list" style="display:none"></div>
+    </div>
+  </section>
+
+  <!-- CURRENTLY IN ROTATION -->
+  <section class="section rotation-section" id="rotation-section">
+    <div class="container">
+      <div class="section-label">Currently in rotation</div>
+      <div class="rotation-strip" id="rotation-strip"></div>
     </div>
   </section>
 
@@ -100,95 +100,84 @@
 </footer>
 
 <script src="js/main.js"></script>
-<script src="js/cover-manifest.js"></script>
 <script>
 
 function formatDate(iso) {
-  if (!iso) return "Unknown";
+  if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
-function buildCard(game) {
-  const slug         = game.slug;
-  const img          = COVER_IMAGES[slug] || game.coverUrl || null;
-  const badgeStyle   = game.rating === null ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : "";
-  const thumbContent = img
-    ? `<img src="${img}" alt="${game.title}" loading="lazy">`
-    : `<div class="card-thumb-placeholder">[ no image ]</div>`;
+function buildRow(item) {
+  const isGame     = item.type === "game";
+  const typeColor  = isGame ? "var(--amber)"              : "var(--film)";
+  const typeBorder = isGame ? "var(--amber-dim)"          : "rgba(106,176,212,0.4)";
+  const typeBg     = isGame ? "var(--amber-glow)"         : "var(--film-dim)";
+  const href       = isGame
+    ? `/games/${encodeURIComponent(item.slug)}`
+    : `pages/films/review.html?slug=${encodeURIComponent(item.slug)}`;
+  const scoreStr   = (item.rating !== null && item.rating !== undefined)
+    ? `${item.rating} / 5`
+    : "— / 5";
   return `
-    <a href="/games/${encodeURIComponent(slug)}" class="card animate-in" data-type="game">
-      <div class="card-thumb">
-        ${thumbContent}
-        <span class="card-score-badge" ${badgeStyle}>${game.rating ?? "—"} / 5</span>
-      </div>
-      <div class="card-body">
-        <div class="card-meta">
-          <span class="type-pill game">Game</span>
-          <span>${game.genres.slice(0,3).join(" · ") || "Game"}</span>
-        </div>
-        <h2 class="card-title">${game.title}</h2>
-        <p class="card-excerpt">${game.dev} — ${game.consoles.slice(0,2).join(" / ") || "PC"}</p>
-        <div class="card-footer">
-          <span class="card-date mono">${formatDate(game.completed)}</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </div>
+    <a href="${href}" class="latest-row" data-type="${item.type}">
+      <span style="background:${typeBg};color:${typeColor};border:1px solid ${typeBorder};padding:0.1rem 0.45rem;font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;flex-shrink:0">${isGame ? "Game" : "Film"}</span>
+      <span class="latest-row-title">${item.title}</span>
+      <span class="latest-row-meta">
+        <span class="latest-row-score">${scoreStr}</span>
+        <span>${formatDate(item.date)}</span>
+      </span>
+      <span class="latest-row-arrow">→</span>
     </a>`;
 }
 
-function buildFilmCard(film) {
-  const badgeStyle   = film.rating === null ? `style="color:var(--text-dim);border-color:var(--text-muted);"` : `style="color:var(--film);border-color:var(--film);"`;
-  const thumbContent = film.posterUrl
-    ? `<img src="${film.posterUrl}" alt="${film.title}" loading="lazy">`
-    : `<div class="card-thumb-placeholder">[ no image ]</div>`;
-  const excerpt = film.review
-    ? film.review.slice(0, 140).trimEnd() + (film.review.length > 140 ? "…" : "")
-    : "// No review text";
+function buildRotationItem(game) {
+  const platform = game.consoles[0] || game.dev || "";
   return `
-    <a href="pages/films/review.html?slug=${encodeURIComponent(film.slug)}" class="card animate-in" data-type="film">
-      <div class="card-thumb poster" style="aspect-ratio:2/3">
-        ${thumbContent}
-        <span class="card-score-badge film" ${badgeStyle}>${film.rating ?? "—"} / 5</span>
-      </div>
-      <div class="card-body">
-        <div class="card-meta">
-          <span class="type-pill film">Film</span>
-          <span>${film.year || ""}</span>
-        </div>
-        <h2 class="card-title">${film.title}</h2>
-        <p class="card-excerpt">${excerpt}</p>
-        <div class="card-footer">
-          <span class="card-date mono">${formatDate(film.pubDate)}</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </div>
+    <a href="/games/${encodeURIComponent(game.slug)}" class="rotation-item">
+      <img src="${game.coverUrl}" alt="${game.title}" loading="lazy">
+      <span class="rotation-item-title">${game.title}</span>
+      <span class="rotation-item-platform">${platform}</span>
     </a>`;
 }
 
 async function loadRecent() {
   const loading = document.getElementById("home-loading");
   const error   = document.getElementById("home-error");
-  const grid    = document.getElementById("review-grid");
+  const list    = document.getElementById("latest-list");
+
   try {
     const [gamesRes, filmsRes] = await Promise.all([
-      fetch("/api/games?sort=completed-desc&limit=3"),
+      fetch("/api/games?sort=completed-desc&limit=6"),
       fetch("/api/films?sort=date-desc")
     ]);
 
     const gamesData = gamesRes.ok ? await gamesRes.json() : { games: [] };
     const filmsData = filmsRes.ok ? await filmsRes.json() : { films: [] };
 
-    const games = (gamesData.games || []).slice(0, 3);
-    const films = (filmsData.films || []).slice(0, 3);
+    const games = (gamesData.games || []).map(g => ({
+      type:   "game",
+      title:  g.title,
+      slug:   g.slug,
+      rating: g.rating,
+      date:   g.completed,
+    }));
+
+    const films = (filmsData.films || []).slice(0, 6).map(f => ({
+      type:   "film",
+      title:  f.title,
+      slug:   f.slug,
+      rating: f.rating,
+      date:   f.pubDate,
+    }));
+
+    const combined = [...games, ...films]
+      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+      .slice(0, 5);
 
     loading.style.display = "none";
-    grid.innerHTML = [
-      ...games.map(buildCard),
-      ...films.map(buildFilmCard)
-    ].join("");
-    grid.style.display = "";
-    initCardStagger();
-    initFilters();
+    list.innerHTML = combined.map(buildRow).join("");
+    list.style.display = "flex";
+
   } catch (err) {
     loading.style.display = "none";
     error.style.display = "";
@@ -196,11 +185,29 @@ async function loadRecent() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", loadRecent);
+async function loadRotation() {
+  try {
+    const res  = await fetch("/api/currently-playing");
+    if (!res.ok) return;
+    const data = await res.json();
+    const games = (data.games || []).filter(g => g.coverUrl);
+    if (!games.length) return;
+
+    const strip   = document.getElementById("rotation-strip");
+    const section = document.getElementById("rotation-section");
+    strip.innerHTML = games.map(buildRotationItem).join("");
+    section.classList.add("visible");
+  } catch { /* fail silently — section stays hidden */ }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadRecent();
+  loadRotation();
+});
 </script>
 <script>
   (function () {
-    const bg = document.getElementById("hero-bg");
+    const bg     = document.getElementById("hero-bg");
     const header = document.getElementById("hero-header");
     if (!bg || !header) return;
     header.addEventListener("mousemove", function (e) {
